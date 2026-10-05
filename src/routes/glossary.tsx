@@ -298,6 +298,22 @@ function Glossary() {
             <p className="mt-2">{L.acted} ______</p>
           </div>
           <p className="mt-3 font-mono text-[11px] text-muted-foreground">{allResponses.length} {L.statementsLabel}</p>
+          <ol className="mt-5 space-y-5 border-t border-foreground/10 pt-5">
+            {allResponses.slice(0, 8).map((response) => {
+              const highlighted = response.id === selectedId || response.id === ownId;
+              return (
+                <li key={response.id ?? response.created_at}>
+                  <button
+                    onClick={() => setSelectedId(response.id === selectedId ? null : response.id)}
+                    className={`w-full border-l pl-3 text-left transition-colors ${highlighted ? "border-foreground text-foreground" : "border-foreground/15 text-muted-foreground hover:text-foreground"}`}
+                  >
+                    {response.art_is && <><span className="block font-mono text-[9px] uppercase opacity-60">{L.artIs}</span><span className="font-serif text-lg leading-snug">{response.art_is}</span></>}
+                    {response.acted_through_art && <><span className="mt-2 block font-mono text-[9px] uppercase opacity-60">{L.acted}</span><span className="font-serif text-lg leading-snug">{response.acted_through_art}</span></>}
+                  </button>
+                </li>
+              );
+            })}
+          </ol>
         </aside>
 
         {/* Emerging connections */}
