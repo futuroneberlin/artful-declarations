@@ -10,6 +10,8 @@ type PublicResponse = {
   acted_through_art: string | null;
   created_at: string | null;
   language: string | null;
+  source_type?: "live" | "mockup";
+  is_mockup?: boolean;
 };
 type Theme = { key: string; label_de: string; label_en: string; sort_order: number };
 type Reference = {
@@ -177,12 +179,15 @@ function mockData(n: number): { responses: PublicResponse[]; links: { response_i
   for (let i = 0; i < n; i++) {
     const id = `mock-${n}-${i}`;
     const r = Math.random();
+    const created = new Date(Date.now() - Math.random() * 30 * 86400000).toISOString();
     responses.push({
       id,
       art_is: r < 0.7 ? "a mock thought ".repeat(1 + Math.floor(Math.random() * 4)).trim() : null,
       acted_through_art: r > 0.4 ? "doing something quietly".slice(0, 6 + Math.floor(Math.random() * 18)) : null,
-      created_at: new Date(Date.now() - Math.random() * 30 * 86400000).toISOString(),
+      created_at: created,
       language: "en",
+      source_type: "mockup",
+      is_mockup: true,
     });
     if (Math.random() > 0.2) links.push({ response_id: id, theme_key: keys[Math.floor(Math.random() * keys.length)]! });
     if (Math.random() > 0.8) links.push({ response_id: id, theme_key: keys[Math.floor(Math.random() * keys.length)]! });
@@ -206,6 +211,7 @@ function Glossary() {
   const [openRefs, setOpenRefs] = useState<Set<string>>(new Set());
   const [mock, setMock] = useState<ReturnType<typeof mockData> | null>(null);
   const [resourceCursor, setResourceCursor] = useState<number>(6);
+  const isDevMode = import.meta.env.DEV;
   const L = t[lang];
 
   useEffect(() => {
@@ -231,9 +237,21 @@ function Glossary() {
       supabase.from("public_responses").select("id, art_is, acted_through_art, created_at, language").order("created_at", { ascending: false }).limit(500),
       supabase.from("public_response_themes").select("response_id, theme_key").limit(2000),
     ]);
-    if (r.data) setResponses(r.data);
+
+    const liveResponses = (r.data ?? []).map((response) => ({
+      ...response,
+      source_type: "live",
+      is_mockup: false,
+    })) as PublicResponse[];
+
+    if (isDevMode && mock) {
+      setResponses(liveResponses.concat(mock.responses));
+    } else {
+      setResponses(liveResponses);
+    }
+
     if (l.data) setLinks(l.data.filter((x): x is { response_id: string; theme_key: string } => Boolean(x.response_id && x.theme_key)));
-  }, []);
+  }, [isDevMode, mock]);
 
   const loadMoreReferences = useCallback(() => {
     setResourceCursor((current) => {
@@ -321,11 +339,16 @@ function Glossary() {
   }, [newId]);
 
   const allResponses = useMemo(() => {
-    if (mock) return mock.responses;
-    if (!newResponse || responses.some((r) => r.id === newResponse.id)) return responses;
-    return [newResponse, ...responses];
-  }, [mock, newResponse, responses]);
-  const allLinks = mock ? mock.links : links;
+    const liveOnly = responses.filter((response) => !response.is_mockup);
+    if (isDevMode && mock) {
+      const merged = liveOnly.concat(mock.responses);
+      if (!newResponse || merged.some((r) => r.id === newResponse.id)) return merged;
+      return [newResponse, ...merged];
+    }
+    if (!newResponse || liveOnly.some((r) => r.id === newResponse.id)) return liveOnly;
+    return [newResponse, ...liveOnly];
+  }, [isDevMode, mock, newResponse, responses]);
+  const allLinks = mock && isDevMode ? mock.links : links;
 
   const themesByResponse = useMemo(() => {
     const m = new Map<string, string[]>();
@@ -360,10 +383,17 @@ function Glossary() {
     const words = new Map<string, number>();
     let actions = 0;
     let relationships = 0;
+    let earliest: string | null = null;
+    let latest: string | null = null;
     for (const response of allResponses) {
       if (response.acted_through_art?.trim()) actions += 1;
       const assigned = themesByResponse.get(response.id ?? "") ?? [];
       relationships += Math.max(0, assigned.length - 1);
+      const timestamp = response.created_at ?? "";
+      if (timestamp) {
+        earliest = earliest ? (timestamp < earliest ? timestamp : earliest) : timestamp;
+        latest = latest ? (timestamp > latest ? timestamp : latest) : timestamp;
+      }
       const text = `${response.art_is ?? ""} ${response.acted_through_art ?? ""}`.toLocaleLowerCase();
       for (const word of text.match(/[\p{L}]{4,}/gu) ?? []) {
         if (!STOP_WORDS.has(word)) words.set(word, (words.get(word) ?? 0) + 1);
@@ -374,8 +404,23 @@ function Glossary() {
       .sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]))
       .slice(0, 8);
     const recurring = groups.find(([key]) => key !== OPEN);
-    return { actions, relationships, keywords, recurring };
+    return { actions, relationships, keywords, recurring, earliest, latest };
   }, [allResponses, groups, themesByResponse]);
+
+  const fieldSummary = useMemo(() => {
+    const activeKey = selectedTheme ?? signals.recurring?.[0] ?? null;
+    if (activeKey) {
+      const label = themeLabels[activeKey] ?? activeKey;
+      return {
+        label,
+        detail: `${groups.find(([key]) => key === activeKey)?.[1].length ?? 0} responses in active relation`,
+      };
+    }
+    return {
+      label: "Field in formation",
+      detail: `${allResponses.length} statements are currently forming the collective field.`,
+    };
+  }, [allResponses.length, groups, selectedTheme, signals.recurring, themeLabels]);
 
   useEffect(() => {
     if (!newId) return;
@@ -401,8 +446,9 @@ function Glossary() {
       <header className="flex items-baseline justify-between font-mono text-xs uppercase tracking-[0.2em] text-muted-foreground">
         <h1>{L.glossaryTitle}</h1>
         <div className="flex gap-5">
-          {import.meta.env.DEV && (
+          {isDevMode && (
             <span className="flex gap-2 normal-case tracking-normal">
+              <span className="font-mono text-[9px] uppercase tracking-[0.2em] text-muted-foreground">dev/test</span>
               {[10, 100, 500].map((n) => <button key={n} onClick={() => setMock(mockData(n))} className="hover:text-foreground">mock {n}</button>)}
               {mock && <button onClick={() => setMock(null)} className="hover:text-foreground">real</button>}
             </span>
@@ -428,6 +474,28 @@ function Glossary() {
           <p className="font-mono text-[10px] uppercase text-muted-foreground">04</p>
           <h2 className="mt-1 font-serif text-3xl font-light uppercase">{L.fieldTitle}</h2>
           <p className="mt-2 max-w-md text-sm text-muted-foreground">→ {L.visualisationQuestion}</p>
+          <div className="mt-3 max-w-md border-l border-foreground/15 pl-3">
+            <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-muted-foreground">Field relation</p>
+            <p className="mt-2 text-sm text-muted-foreground">Theory informs action; action accumulates as a collective field. The center tracks how meanings and gestures begin to relate over time.</p>
+          </div>
+          <div className="mt-4 grid grid-cols-2 gap-3 max-w-md text-xs text-muted-foreground">
+            <div className="rounded border border-foreground/10 bg-foreground/[0.02] p-2">
+              <div className="font-mono uppercase tracking-[0.14em] text-[9px] text-muted-foreground">Active relation</div>
+              <div className="mt-2 font-serif text-lg text-foreground">{fieldSummary.label}</div>
+            </div>
+            <div className="rounded border border-foreground/10 bg-foreground/[0.02] p-2">
+              <div className="font-mono uppercase tracking-[0.14em] text-[9px] text-muted-foreground">Field density</div>
+              <div className="mt-2 font-serif text-lg text-foreground">{allResponses.length}</div>
+            </div>
+            <div className="rounded border border-foreground/10 bg-foreground/[0.02] p-2">
+              <div className="font-mono uppercase tracking-[0.14em] text-[9px] text-muted-foreground">Actions</div>
+              <div className="mt-2 font-serif text-lg text-foreground">{signals.actions}</div>
+            </div>
+            <div className="rounded border border-foreground/10 bg-foreground/[0.02] p-2">
+              <div className="font-mono uppercase tracking-[0.14em] text-[9px] text-muted-foreground">Time</div>
+              <div className="mt-2 font-serif text-lg text-foreground">{signals.earliest && signals.latest ? `${new Date(signals.earliest).toLocaleDateString(undefined, { month: "short", day: "numeric" })}–${new Date(signals.latest).toLocaleDateString(undefined, { month: "short", day: "numeric" })}` : "—"}</div>
+            </div>
+          </div>
           <div className="relative mt-4 h-[62vh] min-h-[360px] lg:sticky lg:top-6 lg:h-[78vh]">
             {nodes.length === 0 && (
               <p className="absolute inset-0 flex items-center justify-center font-serif text-3xl text-muted-foreground md:text-5xl">{L.fieldWaiting}</p>
@@ -454,6 +522,9 @@ function Glossary() {
           <p className="font-mono text-[10px] uppercase text-muted-foreground">01</p>
           <h2 className="mt-1 font-serif text-3xl font-light uppercase">{L.theoryTitle}</h2>
           <p className="mt-2 text-sm text-muted-foreground">→ {L.theoryQuestion}</p>
+          <div className="mt-3 border-l border-foreground/15 pl-3 text-sm text-muted-foreground">
+            Theoretical knowledge frames the field. It establishes the terms through which actions, relationships and recurring attitudes become legible.
+          </div>
           <div className="mt-6 space-y-8">
             {refGroups.map(([cat, list]) => (
               <div key={cat}>
@@ -501,6 +572,7 @@ function Glossary() {
             <p className="mt-2">{L.acted} ______</p>
           </div>
           <p className="mt-3 font-mono text-[11px] text-muted-foreground">{allResponses.length} {L.statementsLabel}</p>
+          {isDevMode && mock && <p className="mt-2 font-mono text-[9px] uppercase tracking-[0.14em] text-muted-foreground">Mockup data visible in development mode only</p>}
           <ol className="mt-5 space-y-5 border-t border-foreground/10 pt-5">
             {allResponses.slice(0, 8).map((response) => {
               const highlighted = response.id === selectedId || response.id === ownId;
