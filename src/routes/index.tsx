@@ -97,6 +97,13 @@ function Participate() {
       consent: true,
     });
     if (error) { setState("idle"); setMsg(L.error); return; }
+    sessionStorage.setItem(`aas_response_${responseId}`, JSON.stringify({
+      id: responseId,
+      art_is: ra.data || null,
+      acted_through_art: rb.data || null,
+      created_at: new Date().toISOString(),
+      language: lang,
+    }));
     await navigate({ to: "/glossary", search: { new: responseId } });
   }
 

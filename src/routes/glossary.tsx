@@ -30,6 +30,7 @@ export const Route = createFileRoute("/glossary")({
 function Glossary() {
   const { new: newId } = Route.useSearch();
   const [responses, setResponses] = useState<PublicResponse[]>([]);
+  const [newResponse, setNewResponse] = useState<PublicResponse | null>(null);
   const [lang, setLang] = useState<Lang>("en");
   const [showArrival, setShowArrival] = useState(Boolean(newId));
   const [highlightOwn, setHighlightOwn] = useState(Boolean(newId));
@@ -39,6 +40,18 @@ function Glossary() {
     if (stored === "de" || stored === "en") setLang(stored);
     else if (navigator.language?.toLowerCase().startsWith("de")) setLang("de");
   }, []);
+
+  useEffect(() => {
+    if (!newId) return;
+    const stored = sessionStorage.getItem(`aas_response_${newId}`);
+    if (!stored) return;
+    try {
+      const parsed = JSON.parse(stored) as PublicResponse;
+      if (parsed.id === newId) setNewResponse(parsed);
+    } catch {
+      sessionStorage.removeItem(`aas_response_${newId}`);
+    }
+  }, [newId]);
 
   useEffect(() => {
     let active = true;
@@ -64,13 +77,17 @@ function Glossary() {
     };
   }, [newId]);
 
-  const own = responses.find((response) => response.id === newId);
-  const field = useMemo(() => responses.flatMap((response) => {
+  const displayedResponses = useMemo(() => {
+    if (!newResponse || responses.some((response) => response.id === newResponse.id)) return responses;
+    return [newResponse, ...responses];
+  }, [newResponse, responses]);
+  const own = displayedResponses.find((response) => response.id === newId);
+  const field = useMemo(() => displayedResponses.flatMap((response) => {
     const lines: Array<{ text: string; id: string | null }> = [];
     if (response.art_is) lines.push({ text: response.art_is, id: response.id });
     if (response.acted_through_art) lines.push({ text: response.acted_through_art, id: response.id });
     return lines;
-  }), [responses]);
+  }), [displayedResponses]);
 
   return (
     <main className="min-h-screen bg-background px-6 py-8 text-foreground md:px-12 md:py-10">
@@ -104,7 +121,7 @@ function Glossary() {
         <aside className="border-t border-foreground/20 pt-5 lg:border-l lg:border-t-0 lg:pl-7 lg:pt-0">
           <h1 className="font-mono text-xs uppercase tracking-[0.2em] text-muted-foreground">{lang === "de" ? "Beiträge" : "Contributions"}</h1>
           <ol className="mt-8 space-y-8">
-            {responses.map((response) => {
+            {displayedResponses.map((response) => {
               const isOwn = highlightOwn && response.id === newId;
               return (
                 <li key={response.id ?? response.created_at} className={`border-l pl-4 transition-all duration-700 ${isOwn ? "border-foreground text-foreground" : "border-foreground/15 text-muted-foreground"}`}>
