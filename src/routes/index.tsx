@@ -50,7 +50,7 @@ function Blank({ value, onChange, label }: { value: string; onChange: (v: string
       value={value}
       onChange={(e) => onChange(e.target.value)}
       placeholder="______"
-      className="blank mt-2 w-full resize-none overflow-hidden border-0 border-b border-foreground/30 bg-transparent pb-1 font-serif text-3xl italic leading-tight text-foreground outline-none transition-colors placeholder:not-italic placeholder:text-muted-foreground/50 focus:border-foreground md:text-4xl"
+      className="blank mt-5 w-full resize-none overflow-hidden border-0 border-b border-foreground/25 bg-transparent pb-4 font-serif text-2xl font-light leading-tight text-foreground outline-none transition-colors placeholder:text-muted-foreground focus:border-foreground md:text-4xl"
     />
   );
 }
@@ -108,9 +108,13 @@ function Participate() {
   }
 
   return (
-    <main className="min-h-screen bg-background px-6 py-8 text-foreground md:px-16 md:py-12">
-      <header className="flex items-baseline justify-between font-mono text-xs uppercase tracking-[0.2em] text-muted-foreground">
-        <span>{L.title}</span>
+    <main className="relative min-h-screen overflow-hidden bg-background px-5 py-5 text-foreground md:flex md:items-center md:px-12 md:py-10">
+      <div className="research-grid pointer-events-none absolute inset-0 opacity-50" />
+      <section className="relative mx-auto w-full max-w-6xl border border-foreground/20 bg-background/90 p-6 backdrop-blur-sm md:p-12">
+      <span className="absolute -left-px -top-px h-8 w-8 border-l border-t border-foreground" />
+      <span className="absolute -bottom-px -right-px h-8 w-8 border-b border-r border-foreground" />
+      <header className="flex items-start justify-between font-mono text-[10px] uppercase text-muted-foreground">
+        <div className="flex items-center gap-3"><span className="field-pulse h-1.5 w-1.5 rounded-full bg-foreground" /><span>{L.title} / Collective field</span></div>
         <span className="flex gap-2">
           {(["de", "en"] as const).map((l) => (
             <Button key={l} type="button" variant="ghost" size="sm" onClick={() => switchLang(l)} className={`h-auto min-w-0 rounded-none p-0 font-mono text-xs uppercase tracking-[0.2em] hover:bg-transparent ${l === lang ? "text-foreground underline underline-offset-4" : "text-muted-foreground hover:text-foreground"}`}>
@@ -120,29 +124,31 @@ function Participate() {
         </span>
       </header>
 
-      <form onSubmit={submit} className="mx-auto mt-20 max-w-6xl md:mt-32">
-          <div className="grid gap-20 md:grid-cols-2 md:gap-16">
-            <label className="block">
-              <span className="font-serif text-3xl uppercase tracking-tight md:text-4xl">{L.artIs}</span>
+      <form onSubmit={submit} className="mt-16 md:mt-24">
+          <div className="grid gap-px border-y border-foreground/15 bg-foreground/15 md:grid-cols-2">
+            <label className="block bg-background p-6 md:min-h-56 md:p-9">
+              <span className="font-mono text-[10px] uppercase text-muted-foreground">01 / {L.artIs}</span>
               <Blank value={a} onChange={setA} label={L.artIs} />
             </label>
-            <label className="block">
-              <span className="font-serif text-3xl uppercase tracking-tight md:text-4xl">{L.acted}</span>
+            <label className="block bg-background p-6 md:min-h-56 md:p-9">
+              <span className="font-mono text-[10px] uppercase text-muted-foreground">02 / {L.acted}</span>
               <Blank value={b} onChange={setB} label={L.acted} />
             </label>
           </div>
 
-          <div className="mt-24 flex flex-col items-start gap-6 md:items-end">
-            <p className="max-w-xl font-mono text-xs leading-relaxed text-muted-foreground md:text-right">
+          <div className="mt-12 flex flex-col items-start justify-between gap-8 md:flex-row md:items-center">
+            <p className="max-w-xl font-sans text-sm font-light leading-relaxed text-muted-foreground">
               {L.consent}{" "}
               <Link to="/privacy" className="underline underline-offset-2 hover:text-foreground">{L.privacy}</Link>
             </p>
-            <Button type="submit" variant="ghost" disabled={state === "sending" || (!a.trim() && !b.trim())} className="h-auto rounded-none p-0 font-mono text-xs uppercase tracking-[0.3em] text-foreground hover:bg-transparent hover:opacity-60 disabled:opacity-30">
+            <Button type="submit" disabled={state === "sending" || (!a.trim() && !b.trim())} className="h-14 rounded-none border border-foreground bg-primary px-8 font-mono text-xs uppercase text-primary-foreground transition-all hover:bg-background hover:text-foreground disabled:border-foreground/20 disabled:bg-transparent disabled:text-muted-foreground">
               {state === "sending" ? L.sending : `${L.submit} →`}
             </Button>
           </div>
           {msg && <p role="alert" className="mt-8 font-mono text-xs text-destructive">{msg}</p>}
       </form>
+      <footer className="mt-14 flex justify-between border-t border-foreground/10 pt-5 font-mono text-[9px] uppercase text-muted-foreground"><span>Anonymous research protocol</span><span>Raw responses preserved</span></footer>
+      </section>
     </main>
   );
 }
