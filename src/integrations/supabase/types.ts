@@ -14,10 +14,94 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      locations: {
+        Row: {
+          created_at: string
+          id: string
+          name: string
+        }
+        Insert: {
+          created_at?: string
+          id: string
+          name: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          name?: string
+        }
+        Relationships: []
+      }
+      responses: {
+        Row: {
+          acted_through_art: string | null
+          art_is: string | null
+          consent: boolean
+          created_at: string
+          hidden: boolean
+          id: string
+          language: string | null
+          location_id: string | null
+          session_id: string | null
+        }
+        Insert: {
+          acted_through_art?: string | null
+          art_is?: string | null
+          consent: boolean
+          created_at?: string
+          hidden?: boolean
+          id?: string
+          language?: string | null
+          location_id?: string | null
+          session_id?: string | null
+        }
+        Update: {
+          acted_through_art?: string | null
+          art_is?: string | null
+          consent?: boolean
+          created_at?: string
+          hidden?: boolean
+          id?: string
+          language?: string | null
+          location_id?: string | null
+          session_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "responses_location_id_fkey"
+            columns: ["location_id"]
+            isOneToOne: false
+            referencedRelation: "locations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
-      [_ in never]: never
+      public_responses: {
+        Row: {
+          acted_through_art: string | null
+          art_is: string | null
+          created_at: string | null
+          id: string | null
+          language: string | null
+        }
+        Insert: {
+          acted_through_art?: string | null
+          art_is?: string | null
+          created_at?: string | null
+          id?: string | null
+          language?: string | null
+        }
+        Update: {
+          acted_through_art?: string | null
+          art_is?: string | null
+          created_at?: string | null
+          id?: string | null
+          language?: string | null
+        }
+        Relationships: []
+      }
     }
     Functions: {
       [_ in never]: never
