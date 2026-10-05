@@ -159,9 +159,9 @@ export function LivingField({ promptLabels, nodes, themeLabels, openLabel, ownId
         const n = group.length;
         const samples = Math.min(n, 8);
         for (let i = 0; i < n; i++) {
-          const a = group[i];
+          const a = group[i]!;
           for (let k = 1; k <= samples; k++) {
-            const b = group[(i + k) % n];
+            const b = group[(i + k) % n]!;
             if (a === b) continue;
             const dx = a.x - b.x, dy = a.y - b.y;
             const d2 = dx * dx + dy * dy + 0.01;
@@ -193,7 +193,7 @@ export function LivingField({ promptLabels, nodes, themeLabels, openLabel, ownId
           if (key === OPEN) continue;
           const hl = p.selectedTheme === key;
           for (let i = 0; i < group.length && lines < MAX_LINES; i++) {
-            const a = group[i], b = group[(i + 1) % group.length];
+            const a = group[i]!, b = group[(i + 1) % group.length]!;
             if (a === b) continue;
             const d = Math.hypot(a.x - b.x, a.y - b.y);
             if (d > 160) continue;
