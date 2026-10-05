@@ -160,6 +160,12 @@ function Glossary() {
     return [...m.entries()];
   }, [refs]);
 
+  useEffect(() => {
+    if (!newId) return;
+    const key = themesByResponse.get(newId)?.[0] ?? OPEN;
+    setOpenThemes((s) => (s.has(key) ? s : new Set(s).add(key)));
+  }, [newId, themesByResponse]);
+
   const ownId = highlightOwn ? newId ?? null : null;
   const toggle = (set: Set<string>, key: string) => { const n = new Set(set); n.has(key) ? n.delete(key) : n.add(key); return n; };
 

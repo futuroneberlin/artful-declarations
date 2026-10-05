@@ -14,3 +14,6 @@
 - Raw `responses` rows are insert-only from the website (no select/update/delete grants); public reads go through the `public_responses` view. Why: raw research data must never be altered by the site.
 - Derived data (themes, clusters, keywords) lives in separate tables, never on `responses`. Why: keeps raw vs derived data separate.
 - Interface strings live in `src/lib/i18n.ts` (de/en). Why: every response stores its language; UI must be fully bilingual.
+- Theme assignment runs in a DB trigger on `responses` insert writing to `response_analysis`; public reads via `public_response_themes`. Why: categorise instantly without touching raw rows.
+- Live glossary updates use a Realtime broadcast ping plus 10s polling, not postgres_changes. Why: raw `responses` are not publicly readable, so row-change events can't reach visitors.
+- `LivingField` (src/components) is the shared canvas field for /glossary and /exhibition. Why: one visual system.
