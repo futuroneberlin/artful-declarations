@@ -49,8 +49,8 @@ function mockData(n: number): { responses: PublicResponse[]; links: { response_i
       created_at: new Date(Date.now() - Math.random() * 30 * 86400000).toISOString(),
       language: "en",
     });
-    if (Math.random() > 0.2) links.push({ response_id: id, theme_key: keys[Math.floor(Math.random() * keys.length)] });
-    if (Math.random() > 0.8) links.push({ response_id: id, theme_key: keys[Math.floor(Math.random() * keys.length)] });
+    if (Math.random() > 0.2) links.push({ response_id: id, theme_key: keys[Math.floor(Math.random() * keys.length)]! });
+    if (Math.random() > 0.8) links.push({ response_id: id, theme_key: keys[Math.floor(Math.random() * keys.length)]! });
   }
   return { responses, links };
 }
