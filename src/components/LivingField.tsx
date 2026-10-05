@@ -27,6 +27,7 @@ type Sim = {
   kind: "art" | "act" | "both";
   theme: string;
   themes: string[];
+  text: string;
 };
 
 const OPEN = "__open";
@@ -74,6 +75,7 @@ export function LivingField({ promptLabels, nodes, themeLabels, openLabel, ownId
         born: fromEdge ? now : now - 10000,
         age: Math.min(1, ageDays / 14),
         seed: Math.random() * 1000,
+        text: (n.art ?? n.act ?? "").slice(0, 32),
         kind, theme, themes: n.themes.length ? n.themes : [OPEN],
       });
     }
@@ -144,6 +146,8 @@ export function LivingField({ promptLabels, nodes, themeLabels, openLabel, ownId
         const arr = byTheme.get(s.theme) ?? [];
         arr.push(s); byTheme.set(s.theme, arr);
       }
+      const scale = sims.length < 20 ? 2.4 : sims.length < 80 ? 1.5 : 1;
+      const showText = sims.length <= 40;
       const motion = reduced ? 0.15 : 1;
       for (const s of sims) {
         const target = p.selectedTheme && s.themes.includes(p.selectedTheme) ? anc.get(p.selectedTheme)! : anc.get(s.theme) ?? anc.get(OPEN)!;
@@ -165,7 +169,7 @@ export function LivingField({ promptLabels, nodes, themeLabels, openLabel, ownId
             if (a === b) continue;
             const dx = a.x - b.x, dy = a.y - b.y;
             const d2 = dx * dx + dy * dy + 0.01;
-            const min = (a.r + b.r) * 2.2;
+            const min = (a.r + b.r) * 2.2 * (group.length < 20 ? 3 : 1.4);
             if (d2 < min * min) {
               const f = 0.04 / Math.sqrt(d2);
               a.vx += dx * f; a.vy += dy * f;
@@ -213,7 +217,7 @@ export function LivingField({ promptLabels, nodes, themeLabels, openLabel, ownId
         const isSel = s.id === p.selectedId || s.id === hoverRef.current;
         const dim = p.selectedTheme && !s.themes.includes(p.selectedTheme) ? 0.25 : 1;
         const pulse = reduced ? 1 : 1 + Math.sin(t * 0.002 + s.seed) * 0.06 * (1 - s.age);
-        const r = s.r * pulse * (isOwn || isSel ? 1.5 : 1);
+        const r = s.r * scale * pulse * (isOwn || isSel ? 1.5 : 1);
         const baseAlpha = (0.55 - s.age * 0.2) * dim;
 
         if (glow > 0 || isOwn || isSel) {
@@ -235,10 +239,17 @@ export function LivingField({ promptLabels, nodes, themeLabels, openLabel, ownId
           ctx.globalAlpha = 0.8; ctx.strokeStyle = C.fg; ctx.lineWidth = 1;
           ctx.beginPath(); ctx.arc(s.x, s.y, r + 4, 0, Math.PI * 2); ctx.stroke();
         }
+        if (showText && s.text) {
+          ctx.globalAlpha = isOwn || isSel ? 0.95 : 0.6 * dim;
+          ctx.fillStyle = C.fg;
+          ctx.font = `${isOwn || isSel ? 20 : 16}px 'Instrument Serif', Georgia, serif`;
+          ctx.textAlign = "left";
+          ctx.fillText(s.text, s.x + r + 6, s.y + 5);
+        }
       }
 
       // Cluster labels
-      ctx.font = "italic 13px 'Instrument Serif', Georgia, serif";
+      ctx.font = "italic 15px 'Instrument Serif', Georgia, serif";
       ctx.textAlign = "center";
       for (const [key, group] of byTheme) {
         if (group.length < 2 && key !== p.selectedTheme) continue;
