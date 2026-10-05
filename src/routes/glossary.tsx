@@ -5,13 +5,14 @@ import { t, type Lang } from "@/lib/i18n";
 import { LivingField, type FieldNode } from "@/components/LivingField";
 
 type PublicResponse = {
-  id: string | null;
+  id: string;
   art_is: string | null;
   acted_through_art: string | null;
-  created_at: string | null;
+  created_at: string;
   language: string | null;
-  source_type?: "live" | "mockup";
-  is_mockup?: boolean;
+  source_type: "live" | "mockup";
+  is_mockup: boolean;
+  exhibition_id: string | null;
 };
 type Theme = { key: string; label_de: string; label_en: string; sort_order: number };
 type Reference = {
@@ -188,6 +189,7 @@ function mockData(n: number): { responses: PublicResponse[]; links: { response_i
       language: "en",
       source_type: "mockup",
       is_mockup: true,
+      exhibition_id: "mockup-exhibition",
     });
     if (Math.random() > 0.2) links.push({ response_id: id, theme_key: keys[Math.floor(Math.random() * keys.length)]! });
     if (Math.random() > 0.8) links.push({ response_id: id, theme_key: keys[Math.floor(Math.random() * keys.length)]! });
@@ -234,24 +236,20 @@ function Glossary() {
 
   const loadField = useCallback(async () => {
     const [r, l] = await Promise.all([
-      supabase.from("public_responses").select("id, art_is, acted_through_art, created_at, language").order("created_at", { ascending: false }).limit(500),
+      supabase.from("public_responses").select("id, art_is, acted_through_art, created_at, language, exhibition_id").order("created_at", { ascending: false }).limit(500),
       supabase.from("public_response_themes").select("response_id, theme_key").limit(2000),
     ]);
 
-    const liveResponses = (r.data ?? []).map((response) => ({
+    const liveResponses = (r.data ?? []).filter((response): response is typeof response & { id: string; created_at: string } => Boolean(response.id && response.created_at)).map((response) => ({
       ...response,
       source_type: "live",
       is_mockup: false,
     })) as PublicResponse[];
 
-    if (isDevMode && mock) {
-      setResponses(liveResponses.concat(mock.responses));
-    } else {
-      setResponses(liveResponses);
-    }
+    setResponses(liveResponses);
 
     if (l.data) setLinks(l.data.filter((x): x is { response_id: string; theme_key: string } => Boolean(x.response_id && x.theme_key)));
-  }, [isDevMode, mock]);
+  }, []);
 
   const loadMoreReferences = useCallback(() => {
     setResourceCursor((current) => {
@@ -339,16 +337,19 @@ function Glossary() {
   }, [newId]);
 
   const allResponses = useMemo(() => {
-    const liveOnly = responses.filter((response) => !response.is_mockup);
     if (isDevMode && mock) {
-      const merged = liveOnly.concat(mock.responses);
+      const merged = responses.concat(mock.responses);
       if (!newResponse || merged.some((r) => r.id === newResponse.id)) return merged;
       return [newResponse, ...merged];
     }
-    if (!newResponse || liveOnly.some((r) => r.id === newResponse.id)) return liveOnly;
-    return [newResponse, ...liveOnly];
+    if (!newResponse || responses.some((r) => r.id === newResponse.id)) return responses;
+    return [newResponse, ...responses];
   }, [isDevMode, mock, newResponse, responses]);
-  const allLinks = mock && isDevMode ? mock.links : links;
+  const allLinks = useMemo(() => mock && isDevMode ? [...links, ...mock.links] : links, [isDevMode, links, mock]);
+  const fieldResponses = useMemo(() => {
+    if (!newResponse || responses.some((response) => response.id === newResponse.id)) return responses;
+    return [newResponse, ...responses];
+  }, [newResponse, responses]);
 
   const themesByResponse = useMemo(() => {
     const m = new Map<string, string[]>();
@@ -356,10 +357,10 @@ function Glossary() {
     return m;
   }, [allLinks]);
 
-  const nodes: FieldNode[] = useMemo(() => allResponses.filter((r) => r.id).map((r) => ({
-    id: r.id!, art: r.art_is, act: r.acted_through_art, createdAt: r.created_at ?? new Date().toISOString(),
-    themes: themesByResponse.get(r.id!) ?? [],
-  })), [allResponses, themesByResponse]);
+  const nodes: FieldNode[] = useMemo(() => fieldResponses.map((r) => ({
+    id: r.id, art: r.art_is, act: r.acted_through_art, createdAt: r.created_at,
+    themes: themesByResponse.get(r.id) ?? [],
+  })), [fieldResponses, themesByResponse]);
 
   const themeLabels = useMemo(() => Object.fromEntries(themes.map((th) => [th.key, lang === "de" ? th.label_de : th.label_en])), [themes, lang]);
 
@@ -373,6 +374,16 @@ function Glossary() {
     return [...m.entries()].sort((a, b) => (a[0] === OPEN ? 1 : b[0] === OPEN ? -1 : b[1].length - a[1].length));
   }, [allResponses, themesByResponse]);
 
+  const fieldGroups = useMemo(() => {
+    const m = new Map<string, PublicResponse[]>();
+    for (const response of fieldResponses) {
+      const keys = themesByResponse.get(response.id) ?? [OPEN];
+      for (const key of keys) m.set(key, [...(m.get(key) ?? []), response]);
+    }
+    for (const list of m.values()) list.sort((a, b) => b.created_at.localeCompare(a.created_at));
+    return [...m.entries()].sort((a, b) => (a[0] === OPEN ? 1 : b[0] === OPEN ? -1 : b[1].length - a[1].length));
+  }, [fieldResponses, themesByResponse]);
+
   const refGroups = useMemo(() => {
     const m = new Map<string, Reference[]>();
     for (const r of refs) m.set(r.category, [...(m.get(r.category) ?? []), r]);
@@ -385,9 +396,9 @@ function Glossary() {
     let relationships = 0;
     let earliest: string | null = null;
     let latest: string | null = null;
-    for (const response of allResponses) {
+    for (const response of fieldResponses) {
       if (response.acted_through_art?.trim()) actions += 1;
-      const assigned = themesByResponse.get(response.id ?? "") ?? [];
+      const assigned = themesByResponse.get(response.id) ?? [];
       relationships += Math.max(0, assigned.length - 1);
       const timestamp = response.created_at ?? "";
       if (timestamp) {
@@ -400,12 +411,12 @@ function Glossary() {
       }
     }
     const keywords = [...words.entries()]
-      .filter(([, count]) => count > 1 || allResponses.length < 8)
+      .filter(([, count]) => count > 1 || fieldResponses.length < 8)
       .sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]))
       .slice(0, 8);
-    const recurring = groups.find(([key]) => key !== OPEN);
+    const recurring = fieldGroups.find(([key]) => key !== OPEN);
     return { actions, relationships, keywords, recurring, earliest, latest };
-  }, [allResponses, groups, themesByResponse]);
+  }, [fieldGroups, fieldResponses, themesByResponse]);
 
   const fieldSummary = useMemo(() => {
     const activeKey = selectedTheme ?? signals.recurring?.[0] ?? null;
@@ -413,14 +424,14 @@ function Glossary() {
       const label = themeLabels[activeKey] ?? activeKey;
       return {
         label,
-        detail: `${groups.find(([key]) => key === activeKey)?.[1].length ?? 0} responses in active relation`,
+        detail: `${fieldGroups.find(([key]) => key === activeKey)?.[1].length ?? 0} responses in active relation`,
       };
     }
     return {
       label: "Field in formation",
-      detail: `${allResponses.length} statements are currently forming the collective field.`,
+      detail: `${fieldResponses.length} statements are currently forming the collective field.`,
     };
-  }, [allResponses.length, groups, selectedTheme, signals.recurring, themeLabels]);
+  }, [fieldGroups, fieldResponses.length, selectedTheme, signals.recurring, themeLabels]);
 
   useEffect(() => {
     if (!newId) return;

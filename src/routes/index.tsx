@@ -93,6 +93,7 @@ function Participate() {
       acted_through_art: rb.data || null,
       session_id: getSessionId(),
       location_id,
+      exhibition_id: null,
       language: lang,
       consent: true,
     });
@@ -103,6 +104,9 @@ function Participate() {
       acted_through_art: rb.data || null,
       created_at: new Date().toISOString(),
       language: lang,
+      source_type: "live",
+      is_mockup: false,
+      exhibition_id: null,
     }));
     await navigate({ to: "/glossary", search: { new: responseId } });
   }
