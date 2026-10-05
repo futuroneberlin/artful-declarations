@@ -1,6 +1,7 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useRef, useState } from "react";
 import { z } from "zod";
+import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { t, type Lang } from "@/lib/i18n";
 
@@ -56,11 +57,11 @@ function Blank({ value, onChange, label }: { value: string; onChange: (v: string
 
 function Participate() {
   const { loc } = Route.useSearch();
+  const navigate = useNavigate();
   const [lang, setLang] = useState<Lang>("en");
   const [a, setA] = useState("");
   const [b, setB] = useState("");
-  const [consent, setConsent] = useState(false);
-  const [state, setState] = useState<"idle" | "sending" | "done">("idle");
+  const [state, setState] = useState<"idle" | "sending">("idle");
   const [msg, setMsg] = useState<string | null>(null);
   const L = t[lang];
 
@@ -79,14 +80,15 @@ function Participate() {
     const ra = answer.safeParse(a), rb = answer.safeParse(b);
     if (!ra.success || !rb.success) return setMsg(L.error);
     if (!ra.data && !rb.data) return setMsg(L.needOne);
-    if (!consent) return setMsg(L.needConsent);
     setState("sending");
     let location_id: string | null = null;
     if (loc) {
       const { data } = await supabase.from("locations").select("id").eq("id", loc).maybeSingle();
       location_id = data?.id ?? null;
     }
+    const responseId = crypto.randomUUID();
     const { error } = await supabase.from("responses").insert({
+      id: responseId,
       art_is: ra.data || null,
       acted_through_art: rb.data || null,
       session_id: getSessionId(),
@@ -95,7 +97,7 @@ function Participate() {
       consent: true,
     });
     if (error) { setState("idle"); setMsg(L.error); return; }
-    setState("done");
+    await navigate({ to: "/glossary", search: { new: responseId } });
   }
 
   return (
@@ -104,24 +106,14 @@ function Participate() {
         <span>{L.title}</span>
         <span className="flex gap-2">
           {(["de", "en"] as const).map((l) => (
-            <button key={l} onClick={() => switchLang(l)} className={l === lang ? "text-foreground underline underline-offset-4" : "hover:text-foreground"}>
+            <Button key={l} type="button" variant="ghost" size="sm" onClick={() => switchLang(l)} className={`h-auto min-w-0 rounded-none p-0 font-mono text-xs uppercase tracking-[0.2em] hover:bg-transparent ${l === lang ? "text-foreground underline underline-offset-4" : "text-muted-foreground hover:text-foreground"}`}>
               {l.toUpperCase()}
-            </button>
+            </Button>
           ))}
         </span>
       </header>
 
-      {state === "done" ? (
-        <section className="flex min-h-[70vh] flex-col items-start justify-center">
-          <div className="field-pulse mb-10 h-3 w-3 rounded-full bg-foreground" aria-hidden />
-          <p className="fade-up max-w-2xl font-serif text-4xl leading-tight md:text-6xl">{L.success}</p>
-          <div className="fade-up mt-12 flex gap-8 font-mono text-xs uppercase tracking-[0.2em]" style={{ animationDelay: "0.6s" }}>
-            <Link to="/glossary" className="border-b border-foreground pb-1">{L.glossary} →</Link>
-            <button onClick={() => { setA(""); setB(""); setState("idle"); }} className="text-muted-foreground hover:text-foreground">{L.again}</button>
-          </div>
-        </section>
-      ) : (
-        <form onSubmit={submit} className="mx-auto mt-20 max-w-6xl md:mt-32">
+      <form onSubmit={submit} className="mx-auto mt-20 max-w-6xl md:mt-32">
           <div className="grid gap-20 md:grid-cols-2 md:gap-16">
             <label className="block">
               <span className="font-serif text-3xl uppercase tracking-tight md:text-4xl">{L.artIs}</span>
@@ -133,21 +125,17 @@ function Participate() {
             </label>
           </div>
 
-          <div className="mt-24 flex flex-col gap-10 md:flex-row md:items-end md:justify-between">
-            <label className="flex max-w-md items-start gap-3 font-mono text-xs leading-relaxed text-muted-foreground">
-              <input type="checkbox" checked={consent} onChange={(e) => setConsent(e.target.checked)} className="mt-0.5 h-3.5 w-3.5 accent-foreground" />
-              <span>
-                {L.consent}{" "}
-                <Link to="/privacy" className="underline underline-offset-2 hover:text-foreground">{L.privacy}</Link>
-              </span>
-            </label>
-            <button type="submit" disabled={state === "sending"} className="self-start font-mono text-xs uppercase tracking-[0.3em] text-foreground transition-opacity hover:opacity-60 disabled:opacity-40 md:self-auto">
+          <div className="mt-24 flex flex-col items-start gap-6 md:items-end">
+            <p className="max-w-xl font-mono text-xs leading-relaxed text-muted-foreground md:text-right">
+              {L.consent}{" "}
+              <Link to="/privacy" className="underline underline-offset-2 hover:text-foreground">{L.privacy}</Link>
+            </p>
+            <Button type="submit" variant="ghost" disabled={state === "sending" || (!a.trim() && !b.trim())} className="h-auto rounded-none p-0 font-mono text-xs uppercase tracking-[0.3em] text-foreground hover:bg-transparent hover:opacity-60 disabled:opacity-30">
               {state === "sending" ? L.sending : `${L.submit} →`}
-            </button>
+            </Button>
           </div>
           {msg && <p role="alert" className="mt-8 font-mono text-xs text-destructive">{msg}</p>}
-        </form>
-      )}
+      </form>
     </main>
   );
 }

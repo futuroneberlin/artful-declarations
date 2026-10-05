@@ -148,5 +148,11 @@
 
 @keyframes fade-up { from { opacity: 0; transform: translateY(12px); filter: blur(4px); } to { opacity: 1; transform: none; filter: none; } }
 @keyframes field-pulse { 0% { box-shadow: 0 0 0 0 color-mix(in oklch, var(--foreground) 40%, transparent); } 100% { box-shadow: 0 0 0 60px transparent; } }
+@keyframes field-highlight { 0%, 100% { text-shadow: 0 0 0 transparent; } 50% { text-shadow: 0 0 24px color-mix(in oklch, var(--foreground) 22%, transparent); } }
 .fade-up { opacity: 0; animation: fade-up 1.4s cubic-bezier(.2,.7,.2,1) forwards; }
 .field-pulse { animation: field-pulse 2.4s ease-out infinite; }
+.field-highlight { animation: field-highlight 2.8s ease-in-out infinite; }
+
+@media (prefers-reduced-motion: reduce) {
+  .fade-up, .field-pulse, .field-highlight { animation: none; opacity: 1; }
+}
