@@ -17,6 +17,10 @@ type Reference = {
   url: string | null; category: string; note: string | null; display_order: number;
 };
 
+const STOP_WORDS = new Set([
+  "about", "after", "again", "also", "been", "being", "durch", "eine", "einem", "einen", "einer", "eines", "from", "habe", "heute", "into", "kunst", "oder", "that", "their", "there", "these", "this", "today", "through", "über", "und", "with", "wurde", "your",
+]);
+
 const OPEN = "__open";
 
 export const Route = createFileRoute("/glossary")({
@@ -160,6 +164,27 @@ function Glossary() {
     return [...m.entries()];
   }, [refs]);
 
+  const signals = useMemo(() => {
+    const words = new Map<string, number>();
+    let actions = 0;
+    let relationships = 0;
+    for (const response of allResponses) {
+      if (response.acted_through_art?.trim()) actions += 1;
+      const assigned = themesByResponse.get(response.id ?? "") ?? [];
+      relationships += Math.max(0, assigned.length - 1);
+      const text = `${response.art_is ?? ""} ${response.acted_through_art ?? ""}`.toLocaleLowerCase();
+      for (const word of text.match(/[\p{L}]{4,}/gu) ?? []) {
+        if (!STOP_WORDS.has(word)) words.set(word, (words.get(word) ?? 0) + 1);
+      }
+    }
+    const keywords = [...words.entries()]
+      .filter(([, count]) => count > 1 || allResponses.length < 8)
+      .sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]))
+      .slice(0, 8);
+    const recurring = groups.find(([key]) => key !== OPEN);
+    return { actions, relationships, keywords, recurring };
+  }, [allResponses, groups, themesByResponse]);
+
   useEffect(() => {
     if (!newId) return;
     const key = themesByResponse.get(newId)?.[0] ?? OPEN;
@@ -196,10 +221,19 @@ function Glossary() {
         {showArrival && <p className="fade-up font-serif text-xl italic md:text-2xl" aria-live="polite">{L.success}</p>}
       </div>
 
-      <div className="mt-6 flex flex-col gap-12 lg:grid lg:grid-cols-[1fr_2fr_1fr] lg:gap-10">
-        {/* Centre */}
-        <section className="order-1 lg:order-2" aria-label={L.fieldTitle}>
-          <h2 className="font-mono text-xs uppercase tracking-[0.2em] text-muted-foreground">{L.fieldTitle}</h2>
+      <nav className="mt-7 grid border-y border-foreground/10 py-3 font-mono text-[10px] uppercase text-muted-foreground sm:grid-cols-2 lg:grid-cols-4" aria-label={L.glossaryTitle}>
+        <a href="#theory" className="py-1 hover:text-foreground">01 — {L.theoryTitle}</a>
+        <a href="#participation" className="py-1 hover:text-foreground">02 — {L.participationTitle}</a>
+        <a href="#connections" className="py-1 hover:text-foreground">03 — {L.connectionsTitle}</a>
+        <a href="#visualisation" className="py-1 hover:text-foreground">04 — {L.fieldTitle}</a>
+      </nav>
+
+      <div className="mt-9 flex flex-col gap-14 lg:grid lg:grid-cols-[1fr_2fr_1fr] lg:gap-10">
+        {/* Living visualisation */}
+        <section id="visualisation" className="order-1 lg:order-2 lg:row-span-2" aria-label={L.fieldTitle}>
+          <p className="font-mono text-[10px] uppercase text-muted-foreground">04</p>
+          <h2 className="mt-1 font-serif text-3xl">{L.fieldTitle}</h2>
+          <p className="mt-2 max-w-md font-serif text-lg italic text-muted-foreground">→ {L.visualisationQuestion}</p>
           <div className="relative mt-4 h-[62vh] min-h-[360px] lg:sticky lg:top-6 lg:h-[78vh]">
             {nodes.length === 0 && (
               <p className="absolute inset-0 flex items-center justify-center font-serif text-3xl text-muted-foreground md:text-5xl">{L.fieldWaiting}</p>
@@ -222,8 +256,10 @@ function Glossary() {
         </section>
 
         {/* Theory */}
-        <aside className="order-2 lg:order-1" aria-label={L.theoryTitle}>
-          <h2 className="font-mono text-xs uppercase tracking-[0.2em] text-muted-foreground">{L.theoryTitle}</h2>
+        <aside id="theory" className="order-2 lg:order-1" aria-label={L.theoryTitle}>
+          <p className="font-mono text-[10px] uppercase text-muted-foreground">01</p>
+          <h2 className="mt-1 font-serif text-3xl">{L.theoryTitle}</h2>
+          <p className="mt-2 font-serif text-lg italic text-muted-foreground">→ {L.theoryQuestion}</p>
           <div className="mt-6 space-y-8">
             {refGroups.map(([cat, list]) => (
               <div key={cat}>
@@ -252,9 +288,73 @@ function Glossary() {
           </div>
         </aside>
 
-        {/* Contributions */}
-        <aside className="order-3" aria-label={L.contributionsTitle}>
-          <h2 className="font-mono text-xs uppercase tracking-[0.2em] text-muted-foreground">{L.contributionsTitle}</h2>
+        {/* Participation */}
+        <aside id="participation" className="order-3 lg:order-3" aria-label={L.participationTitle}>
+          <p className="font-mono text-[10px] uppercase text-muted-foreground">02</p>
+          <h2 className="mt-1 font-serif text-3xl">{L.participationTitle}</h2>
+          <p className="mt-2 font-serif text-lg italic text-muted-foreground">→ {L.participationQuestion}</p>
+          <div className="mt-6 border-y border-foreground/10 py-4 font-mono text-[11px] uppercase text-muted-foreground">
+            <p>{L.artIs} ______</p>
+            <p className="mt-2">{L.acted} ______</p>
+          </div>
+          <p className="mt-3 font-mono text-[11px] text-muted-foreground">{allResponses.length} {L.statementsLabel}</p>
+          <ol className="mt-5 space-y-5 border-t border-foreground/10 pt-5">
+            {allResponses.slice(0, 8).map((response) => {
+              const highlighted = response.id === selectedId || response.id === ownId;
+              return (
+                <li key={response.id ?? response.created_at}>
+                  <button
+                    onClick={() => setSelectedId(response.id === selectedId ? null : response.id)}
+                    className={`w-full border-l pl-3 text-left transition-colors ${highlighted ? "border-foreground text-foreground" : "border-foreground/15 text-muted-foreground hover:text-foreground"}`}
+                  >
+                    {response.art_is && <><span className="block font-mono text-[9px] uppercase opacity-60">{L.artIs}</span><span className="font-serif text-lg leading-snug">{response.art_is}</span></>}
+                    {response.acted_through_art && <><span className="mt-2 block font-mono text-[9px] uppercase opacity-60">{L.acted}</span><span className="font-serif text-lg leading-snug">{response.acted_through_art}</span></>}
+                  </button>
+                </li>
+              );
+            })}
+          </ol>
+        </aside>
+
+        {/* Emerging connections */}
+        <aside id="connections" className="order-4 lg:order-3" aria-label={L.connectionsTitle}>
+          <p className="font-mono text-[10px] uppercase text-muted-foreground">03</p>
+          <h2 className="mt-1 font-serif text-3xl">{L.connectionsTitle}</h2>
+          <p className="mt-2 font-serif text-lg italic text-muted-foreground">→ {L.connectionsQuestion}</p>
+
+          <dl className="mt-6 grid grid-cols-2 gap-x-4 gap-y-5 border-y border-foreground/10 py-5">
+            <div>
+              <dt className="font-mono text-[10px] uppercase text-muted-foreground">{L.themesLabel}</dt>
+              <dd className="mt-1 font-serif text-2xl">{groups.filter(([key]) => key !== OPEN).length}</dd>
+            </div>
+            <div>
+              <dt className="font-mono text-[10px] uppercase text-muted-foreground">{L.actionsLabel}</dt>
+              <dd className="mt-1 font-serif text-2xl">{signals.actions}</dd>
+              <dd className="text-xs text-muted-foreground">{L.actionsFound}</dd>
+            </div>
+            <div>
+              <dt className="font-mono text-[10px] uppercase text-muted-foreground">{L.relationshipsLabel}</dt>
+              <dd className="mt-1 font-serif text-2xl">{signals.relationships}</dd>
+              <dd className="text-xs text-muted-foreground">{L.connectionsFound}</dd>
+            </div>
+            <div>
+              <dt className="font-mono text-[10px] uppercase text-muted-foreground">{L.patternsLabel}</dt>
+              <dd className="mt-1 font-serif text-lg leading-tight">{signals.recurring ? themeLabels[signals.recurring[0]] ?? signals.recurring[0] : L.noPatterns}</dd>
+              {signals.recurring && <dd className="text-xs text-muted-foreground">{L.repeatedTheme}</dd>}
+            </div>
+          </dl>
+
+          {signals.keywords.length > 0 && (
+            <div className="mt-5">
+              <h3 className="font-mono text-[10px] uppercase text-muted-foreground">{L.keywordsLabel}</h3>
+              <p className="mt-2 font-serif text-lg leading-relaxed">
+                {signals.keywords.map(([word, count], index) => (
+                  <span key={word} className={count > 1 ? "text-foreground" : "text-muted-foreground"}>{index > 0 ? " · " : ""}{word}<sup className="ml-0.5 font-mono text-[9px]">{count}</sup></span>
+                ))}
+              </p>
+            </div>
+          )}
+
           <div className="mt-6 divide-y divide-foreground/10 border-t border-foreground/10">
             {groups.map(([key, list]) => {
               const open = openThemes.has(key);
