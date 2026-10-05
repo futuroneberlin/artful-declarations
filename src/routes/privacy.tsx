@@ -17,7 +17,7 @@ export const Route = createFileRoute("/privacy")({
 function Privacy() {
   return (
     <main className="min-h-screen bg-background px-6 py-8 md:px-16 md:py-12">
-      <Link to="/" search={{ loc: undefined }} className="font-mono text-xs uppercase tracking-[0.2em] text-muted-foreground hover:text-foreground">← Art as Stance</Link>
+      <Link to="/" className="font-mono text-xs uppercase tracking-[0.2em] text-muted-foreground hover:text-foreground">← Art as Stance</Link>
       <article className="mt-20 max-w-2xl space-y-6 text-lg leading-relaxed">
         <h1 className="font-serif text-5xl">Privacy</h1>
         <p className="font-mono text-xs uppercase tracking-[0.2em] text-muted-foreground">Placeholder text — to be finalised</p>

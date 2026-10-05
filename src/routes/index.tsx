@@ -5,9 +5,10 @@ import { supabase } from "@/integrations/supabase/client";
 import { t, type Lang } from "@/lib/i18n";
 
 export const Route = createFileRoute("/")({
-  validateSearch: (s: Record<string, unknown>) => ({
-    loc: typeof s.loc === "string" ? s.loc.slice(0, 100) : undefined,
-  }),
+  validateSearch: (s: Record<string, unknown>): { loc?: string } => {
+    const loc = s["loc"];
+    return typeof loc === "string" ? { loc: loc.slice(0, 100) } : {};
+  },
   head: () => ({
     meta: [
       { title: "Art as Stance — Complete the sentence" },
