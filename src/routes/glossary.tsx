@@ -17,6 +17,137 @@ type Reference = {
   url: string | null; category: string; note: string | null; display_order: number;
 };
 
+const ONLINE_THEORY_SOURCES = [
+  { slug: "Socially_engaged_art", title: "Socially Engaged Art", url: "https://en.wikipedia.org/wiki/Socially_engaged_art" },
+  { slug: "Relational_aesthetics", title: "Relational Aesthetics", url: "https://en.wikipedia.org/wiki/Relational_aesthetics" },
+  { slug: "Participatory_art", title: "Participatory Art", url: "https://en.wikipedia.org/wiki/Participatory_art" },
+  { slug: "Artivism", title: "Artivism", url: "https://en.wikipedia.org/wiki/Artivism" },
+  { slug: "Community_arts", title: "Community Arts", url: "https://en.wikipedia.org/wiki/Community_arts" },
+] as const;
+
+const ONLINE_RESEARCH_PORTALS = [
+  {
+    id: "google-scholar-socially-engaged-art",
+    title: "Google Scholar — socially engaged art",
+    author: "Google Scholar",
+    year: null,
+    url: "https://scholar.google.com/scholar?q=socially+engaged+art+social+practice",
+    category: "Research platforms",
+    note: "Search gateway for academic articles, books and peer-reviewed writing on socially engaged art, participatory practice and collective cultural production.",
+    display_order: 0,
+  },
+  {
+    id: "jstor-social-practice-art",
+    title: "JSTOR — art, participation and social practice",
+    author: "JSTOR",
+    year: null,
+    url: "https://www.jstor.org/action/doBasicSearch?Query=socially+engaged+art+social+practice",
+    category: "Research platforms",
+    note: "Scholarly archive for journals and books tracing debates on art, community, public space and social relations.",
+    display_order: 1,
+  },
+  {
+    id: "researchgate-art-social-practice",
+    title: "ResearchGate — art and social practice",
+    author: "ResearchGate",
+    year: null,
+    url: "https://www.researchgate.net/search/publication?q=socially%20engaged%20art%20social%20practice",
+    category: "Research platforms",
+    note: "Research output index where scholars and practitioners discuss socially engaged art, public art and collective making.",
+    display_order: 2,
+  },
+  {
+    id: "taylor-francis-social-practice-art",
+    title: "Taylor & Francis — social practice and art research",
+    author: "Taylor & Francis",
+    year: null,
+    url: "https://www.tandfonline.com/search?query=social%20practice%20art",
+    category: "Research platforms",
+    note: "Publisher search index for writing on art, activism, urban life, cultural theory and social transformation.",
+    display_order: 3,
+  },
+  {
+    id: "oxford-art-social-practice",
+    title: "Oxford Research Encyclopedia of Art",
+    author: "Oxford University Press",
+    year: null,
+    url: "https://oxfordre.com/art/search?btog=chap&f_0=all",
+    category: "Research platforms",
+    note: "Scholarly reference database for art history, theory and cultural analysis, including participation and social relation.",
+    display_order: 4,
+  },
+  {
+    id: "e-flux-artist-essay-network",
+    title: "e-flux — essays on social practice and public art",
+    author: "e-flux",
+    year: null,
+    url: "https://www.e-flux.com/search/?q=social%20practice%20art",
+    category: "Research platforms",
+    note: "Critical essays and discussion on contemporary art, public space and artistic practices shaped by social contexts.",
+    display_order: 5,
+  },
+  {
+    id: "caa-art-in-public-space",
+    title: "CAA — Art in public space and social practice",
+    author: "College Art Association",
+    year: null,
+    url: "https://www.collegeart.org/search?query=public%20art%20social%20practice",
+    category: "Research platforms",
+    note: "Professional association portal for art-historical and critical work on public art, participation and social context.",
+    display_order: 6,
+  },
+  {
+    id: "project-muse-art-and-social-practice",
+    title: "Project MUSE — art and social context",
+    author: "Project MUSE",
+    year: null,
+    url: "https://muse.jhu.edu/searchresults?query=art%20social%20practice",
+    category: "Research platforms",
+    note: "Academic database for humanities and arts scholarship linking art, culture, politics and everyday social life.",
+    display_order: 7,
+  },
+  {
+    id: "doab-art-social-practice",
+    title: "Directory of Open Access Books — art and social practice",
+    author: "DOAB",
+    year: null,
+    url: "https://directory.doabooks.org/search?query=art%20social%20practice",
+    category: "Research platforms",
+    note: "Open-access book index for research in art, culture, public practice and social transformation.",
+    display_order: 8,
+  },
+  {
+    id: "google-books-social-practice-art",
+    title: "Google Books — social practice and art",
+    author: "Google Books",
+    year: null,
+    url: "https://books.google.com/books?q=social+practice+art",
+    category: "Research platforms",
+    note: "Book search index covering publications on public art, community arts, participation and social practice.",
+    display_order: 9,
+  },
+  {
+    id: "academia-socially-engaged-art",
+    title: "Academia.edu — socially engaged art",
+    author: "Academia.edu",
+    year: null,
+    url: "https://www.academia.edu/search?q=socially%20engaged%20art",
+    category: "Research platforms",
+    note: "Platform for academic papers, essays and research writing on socially engaged art and collaborative practice.",
+    display_order: 10,
+  },
+  {
+    id: "semantic-scholar-art-social-practice",
+    title: "Semantic Scholar — art social practice research",
+    author: "Semantic Scholar",
+    year: null,
+    url: "https://www.semanticscholar.org/search?q=social%20practice%20art",
+    category: "Research platforms",
+    note: "AI-powered citation and paper discovery for related scholarship on art and social practice.",
+    display_order: 11,
+  },
+] as const;
+
 const STOP_WORDS = new Set([
   "about", "after", "again", "also", "been", "being", "durch", "eine", "einem", "einen", "einer", "eines", "from", "habe", "heute", "into", "kunst", "oder", "that", "their", "there", "these", "this", "today", "through", "über", "und", "with", "wurde", "your",
 ]);
@@ -74,6 +205,7 @@ function Glossary() {
   const [openThemes, setOpenThemes] = useState<Set<string>>(new Set());
   const [openRefs, setOpenRefs] = useState<Set<string>>(new Set());
   const [mock, setMock] = useState<ReturnType<typeof mockData> | null>(null);
+  const [resourceCursor, setResourceCursor] = useState<number>(6);
   const L = t[lang];
 
   useEffect(() => {
@@ -103,17 +235,77 @@ function Glossary() {
     if (l.data) setLinks(l.data.filter((x): x is { response_id: string; theme_key: string } => Boolean(x.response_id && x.theme_key)));
   }, []);
 
+  const loadMoreReferences = useCallback(() => {
+    setResourceCursor((current) => {
+      const next = Math.min(current + 3, ONLINE_RESEARCH_PORTALS.length);
+      setRefs((existing) => {
+        const portalIds = new Set(ONLINE_RESEARCH_PORTALS.map((item) => item.id));
+        const keep = existing.filter((item) => !portalIds.has(item.id));
+        const nextBatch = ONLINE_RESEARCH_PORTALS.slice(0, next).map((item) => ({ ...item } as Reference));
+        return [...nextBatch, ...keep];
+      });
+      return next;
+    });
+  }, []);
+
   useEffect(() => {
+    const loadTheorySources = async () => {
+      const wikiResults = await Promise.allSettled(
+        ONLINE_THEORY_SOURCES.map(async (source, index) => {
+          const response = await fetch(`https://en.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(source.slug)}`);
+          if (!response.ok) throw new Error(`Failed to load ${source.title}`);
+          const data = (await response.json()) as {
+            title?: string;
+            extract?: string;
+            content_urls?: { desktop?: { page?: string } };
+            timestamp?: string;
+          };
+          return {
+            id: `wiki-${source.slug}`,
+            title: data.title ?? source.title,
+            author: "Wikipedia",
+            year: data.timestamp ? new Date(data.timestamp).getFullYear().toString() : null,
+            url: data.content_urls?.desktop?.page ?? source.url,
+            category: "Art & social practice",
+            note: data.extract ?? "An online overview of art practices that engage social life, participation and collective action.",
+            display_order: index,
+          } as Reference;
+        }),
+      );
+
+      const initialPortalRefs = ONLINE_RESEARCH_PORTALS.slice(0, resourceCursor).map((item) => ({ ...item } as Reference));
+      const onlineRefs = [
+        ...wikiResults.flatMap((result) => (result.status === "fulfilled" ? [result.value] : [])),
+        ...initialPortalRefs,
+      ];
+
+      setRefs((current) => {
+        const localRefs = current.filter((item) => !item.id.startsWith("wiki-") && !ONLINE_RESEARCH_PORTALS.some((source) => source.id === item.id));
+        return [...onlineRefs, ...localRefs];
+      });
+    };
+
     supabase.from("themes").select("key, label_de, label_en, sort_order").order("sort_order").then(({ data }) => setThemes(data ?? []));
-    supabase.from("references").select("id, title, author, year, url, category, note, display_order").order("display_order").then(({ data }) => setRefs(data ?? []));
+    supabase.from("references").select("id, title, author, year, url, category, note, display_order").order("display_order").then(({ data }) => {
+      const dbRefs = data ?? [];
+      setRefs((current) => {
+        const onlineRefs = current.filter((item) => item.id.startsWith("wiki-") || ONLINE_RESEARCH_PORTALS.some((source) => source.id === item.id));
+        return [...onlineRefs, ...dbRefs];
+      });
+    });
+    loadTheorySources();
     loadField();
     const poll = window.setInterval(loadField, 10000);
+    const resourcePoll = window.setInterval(loadMoreReferences, 20000);
+    const onInteract = () => loadMoreReferences();
+    window.addEventListener("pointerdown", onInteract);
+    window.addEventListener("keydown", onInteract);
     // Raw responses are not publicly readable, so live updates travel as an anonymous "ping" on a broadcast channel.
     const channel = supabase.channel("field-pings").on("broadcast", { event: "new" }, () => loadField()).subscribe((status) => {
       if (status === "SUBSCRIBED" && newId) channel.send({ type: "broadcast", event: "new", payload: {} });
     });
-    return () => { window.clearInterval(poll); supabase.removeChannel(channel); };
-  }, [loadField, newId]);
+    return () => { window.clearInterval(poll); window.clearInterval(resourcePoll); window.removeEventListener("pointerdown", onInteract); window.removeEventListener("keydown", onInteract); supabase.removeChannel(channel); };
+  }, [loadField, loadMoreReferences, newId, resourceCursor]);
 
   useEffect(() => {
     if (!newId) return;
@@ -265,20 +457,29 @@ function Glossary() {
           <div className="mt-6 space-y-8">
             {refGroups.map(([cat, list]) => (
               <div key={cat}>
-                <h3 className="font-serif text-lg italic text-muted-foreground">{cat}</h3>
-                <ul className="mt-2 divide-y divide-foreground/10 border-t border-foreground/10">
+                <h3 className="font-mono text-[10px] uppercase tracking-[0.16em] text-muted-foreground">{cat}</h3>
+                <ul className="mt-3 divide-y divide-foreground/10 border-t border-foreground/10">
                   {list.map((r) => {
                     const open = openRefs.has(r.id);
                     return (
-                      <li key={r.id}>
-                        <button onClick={() => setOpenRefs((s) => toggle(s, r.id))} aria-expanded={open} className="w-full py-3 text-left">
-                          <span className="font-serif text-lg leading-snug">{r.title}</span>
-                          {(r.author || r.year) && <span className="block font-mono text-[11px] text-muted-foreground">{[r.author, r.year].filter(Boolean).join(", ")}</span>}
+                      <li key={r.id} className="py-3 first:pt-0">
+                        <button onClick={() => setOpenRefs((s) => toggle(s, r.id))} aria-expanded={open} className="w-full text-left">
+                          <div className="flex items-start justify-between gap-3">
+                            <div className="min-w-0 flex-1">
+                              <span className="block font-serif text-lg leading-snug text-foreground">{r.title}</span>
+                              {(r.author || r.year) && <span className="mt-1 block font-mono text-[10px] uppercase tracking-[0.12em] text-muted-foreground">{[r.author, r.year].filter(Boolean).join(" · ")}</span>}
+                            </div>
+                            {r.url && <span className="mt-1 font-mono text-[10px] uppercase text-muted-foreground">↗</span>}
+                          </div>
                         </button>
+                        {r.url && (
+                          <a href={r.url} target="_blank" rel="noopener noreferrer" className="mt-2 inline-block font-mono text-[10px] uppercase tracking-[0.16em] underline underline-offset-4 hover:text-foreground">
+                            {L.readMore} ↗
+                          </a>
+                        )}
                         {open && (
-                          <div className="fade-up pb-4 text-sm leading-relaxed text-muted-foreground">
+                          <div className="fade-up mt-3 rounded border border-foreground/10 bg-foreground/[0.02] p-3 text-sm leading-relaxed text-muted-foreground">
                             {r.note && <p>{r.note}</p>}
-                            {r.url && <a href={r.url} target="_blank" rel="noopener noreferrer" className="mt-2 inline-block underline underline-offset-4 hover:text-foreground">{L.readMore} ↗</a>}
                           </div>
                         )}
                       </li>

@@ -56,7 +56,7 @@ export const t = {
     participationQuestion: "Was sagen und tun die Besucher:innen?",
     connectionsTitle: "Entstehende Verbindungen",
     connectionsQuestion: "Welche Muster entstehen aus den Beiträgen?",
-    visualisationQuestion: "Wie wird aus individuellen Handlungen ein kollektives Feld?",
+    visualisationQuestion: "Wie werden individuelle Handlungen zu einem kollektiven Feld?",
     themesLabel: "Themen",
     keywordsLabel: "Schlüsselwörter",
     actionsLabel: "Handlungen",
