@@ -18,8 +18,8 @@ function Privacy() {
   return (
     <main className="min-h-screen bg-background px-6 py-8 md:px-16 md:py-12">
       <Link to="/" className="font-mono text-xs uppercase tracking-[0.2em] text-muted-foreground hover:text-foreground">← Art as Stance</Link>
-      <article className="mt-20 max-w-2xl space-y-6 text-lg leading-relaxed">
-        <h1 className="font-serif text-5xl">Privacy</h1>
+      <article className="mt-20 max-w-2xl border border-foreground/20 p-6 text-lg leading-relaxed md:p-10">
+        <h1 className="font-serif text-5xl font-light uppercase">Privacy</h1>
         <p className="font-mono text-xs uppercase tracking-[0.2em] text-muted-foreground">Placeholder text — to be finalised</p>
         <p>When you contribute, the following is stored:</p>
         <ul className="list-disc space-y-1 pl-6">

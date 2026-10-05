@@ -203,7 +203,9 @@ function Glossary() {
   };
 
   return (
-    <main className="min-h-screen bg-background px-5 py-8 text-foreground md:px-10 md:py-10">
+    <main className="relative min-h-screen overflow-hidden bg-background px-5 py-8 text-foreground md:px-10 md:py-10">
+      <div className="research-grid pointer-events-none fixed inset-0 opacity-30" />
+      <div className="relative">
       <header className="flex items-baseline justify-between font-mono text-xs uppercase tracking-[0.2em] text-muted-foreground">
         <h1>{L.glossaryTitle}</h1>
         <div className="flex gap-5">
@@ -232,8 +234,8 @@ function Glossary() {
         {/* Living visualisation */}
         <section id="visualisation" className="order-1 lg:order-2 lg:row-span-2" aria-label={L.fieldTitle}>
           <p className="font-mono text-[10px] uppercase text-muted-foreground">04</p>
-          <h2 className="mt-1 font-serif text-3xl">{L.fieldTitle}</h2>
-          <p className="mt-2 max-w-md font-serif text-lg italic text-muted-foreground">→ {L.visualisationQuestion}</p>
+          <h2 className="mt-1 font-serif text-3xl font-light uppercase">{L.fieldTitle}</h2>
+          <p className="mt-2 max-w-md text-sm text-muted-foreground">→ {L.visualisationQuestion}</p>
           <div className="relative mt-4 h-[62vh] min-h-[360px] lg:sticky lg:top-6 lg:h-[78vh]">
             {nodes.length === 0 && (
               <p className="absolute inset-0 flex items-center justify-center font-serif text-3xl text-muted-foreground md:text-5xl">{L.fieldWaiting}</p>
@@ -258,8 +260,8 @@ function Glossary() {
         {/* Theory */}
         <aside id="theory" className="order-2 lg:order-1" aria-label={L.theoryTitle}>
           <p className="font-mono text-[10px] uppercase text-muted-foreground">01</p>
-          <h2 className="mt-1 font-serif text-3xl">{L.theoryTitle}</h2>
-          <p className="mt-2 font-serif text-lg italic text-muted-foreground">→ {L.theoryQuestion}</p>
+          <h2 className="mt-1 font-serif text-3xl font-light uppercase">{L.theoryTitle}</h2>
+          <p className="mt-2 text-sm text-muted-foreground">→ {L.theoryQuestion}</p>
           <div className="mt-6 space-y-8">
             {refGroups.map(([cat, list]) => (
               <div key={cat}>
@@ -291,8 +293,8 @@ function Glossary() {
         {/* Participation */}
         <aside id="participation" className="order-3 lg:order-3" aria-label={L.participationTitle}>
           <p className="font-mono text-[10px] uppercase text-muted-foreground">02</p>
-          <h2 className="mt-1 font-serif text-3xl">{L.participationTitle}</h2>
-          <p className="mt-2 font-serif text-lg italic text-muted-foreground">→ {L.participationQuestion}</p>
+          <h2 className="mt-1 font-serif text-3xl font-light uppercase">{L.participationTitle}</h2>
+          <p className="mt-2 text-sm text-muted-foreground">→ {L.participationQuestion}</p>
           <div className="mt-6 border-y border-foreground/10 py-4 font-mono text-[11px] uppercase text-muted-foreground">
             <p>{L.artIs} ______</p>
             <p className="mt-2">{L.acted} ______</p>
@@ -319,8 +321,8 @@ function Glossary() {
         {/* Emerging connections */}
         <aside id="connections" className="order-4 lg:order-3" aria-label={L.connectionsTitle}>
           <p className="font-mono text-[10px] uppercase text-muted-foreground">03</p>
-          <h2 className="mt-1 font-serif text-3xl">{L.connectionsTitle}</h2>
-          <p className="mt-2 font-serif text-lg italic text-muted-foreground">→ {L.connectionsQuestion}</p>
+          <h2 className="mt-1 font-serif text-3xl font-light uppercase">{L.connectionsTitle}</h2>
+          <p className="mt-2 text-sm text-muted-foreground">→ {L.connectionsQuestion}</p>
 
           <dl className="mt-6 grid grid-cols-2 gap-x-4 gap-y-5 border-y border-foreground/10 py-5">
             <div>
@@ -389,6 +391,7 @@ function Glossary() {
             })}
           </div>
         </aside>
+      </div>
       </div>
     </main>
   );
