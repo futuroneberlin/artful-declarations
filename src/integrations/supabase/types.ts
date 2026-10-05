@@ -32,6 +32,91 @@ export type Database = {
         }
         Relationships: []
       }
+      references: {
+        Row: {
+          author: string | null
+          category: string
+          created_at: string
+          display_order: number
+          id: string
+          note: string | null
+          title: string
+          url: string | null
+          visible: boolean
+          year: string | null
+        }
+        Insert: {
+          author?: string | null
+          category?: string
+          created_at?: string
+          display_order?: number
+          id?: string
+          note?: string | null
+          title: string
+          url?: string | null
+          visible?: boolean
+          year?: string | null
+        }
+        Update: {
+          author?: string | null
+          category?: string
+          created_at?: string
+          display_order?: number
+          id?: string
+          note?: string | null
+          title?: string
+          url?: string | null
+          visible?: boolean
+          year?: string | null
+        }
+        Relationships: []
+      }
+      response_analysis: {
+        Row: {
+          created_at: string
+          created_by: string
+          id: string
+          response_id: string
+          theme_key: string
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string
+          id?: string
+          response_id: string
+          theme_key: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string
+          id?: string
+          response_id?: string
+          theme_key?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "response_analysis_response_id_fkey"
+            columns: ["response_id"]
+            isOneToOne: false
+            referencedRelation: "public_responses"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "response_analysis_response_id_fkey"
+            columns: ["response_id"]
+            isOneToOne: false
+            referencedRelation: "responses"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "response_analysis_theme_key_fkey"
+            columns: ["theme_key"]
+            isOneToOne: false
+            referencedRelation: "themes"
+            referencedColumns: ["key"]
+          },
+        ]
+      }
       responses: {
         Row: {
           acted_through_art: string | null
@@ -76,8 +161,61 @@ export type Database = {
           },
         ]
       }
+      themes: {
+        Row: {
+          key: string
+          keywords: string[]
+          label_de: string
+          label_en: string
+          sort_order: number
+        }
+        Insert: {
+          key: string
+          keywords?: string[]
+          label_de: string
+          label_en: string
+          sort_order?: number
+        }
+        Update: {
+          key?: string
+          keywords?: string[]
+          label_de?: string
+          label_en?: string
+          sort_order?: number
+        }
+        Relationships: []
+      }
     }
     Views: {
+      public_response_themes: {
+        Row: {
+          response_id: string | null
+          theme_key: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "response_analysis_response_id_fkey"
+            columns: ["response_id"]
+            isOneToOne: false
+            referencedRelation: "public_responses"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "response_analysis_response_id_fkey"
+            columns: ["response_id"]
+            isOneToOne: false
+            referencedRelation: "responses"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "response_analysis_theme_key_fkey"
+            columns: ["theme_key"]
+            isOneToOne: false
+            referencedRelation: "themes"
+            referencedColumns: ["key"]
+          },
+        ]
+      }
       public_responses: {
         Row: {
           acted_through_art: string | null
