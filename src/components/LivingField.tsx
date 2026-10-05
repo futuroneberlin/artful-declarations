@@ -12,6 +12,7 @@ type Props = {
   nodes: FieldNode[];
   themeLabels: Record<string, string>;
   openLabel: string;
+  promptLabels: { art: string; act: string };
   ownId?: string | null;
   selectedId?: string | null;
   selectedTheme?: string | null;
@@ -31,7 +32,7 @@ type Sim = {
 const OPEN = "__open";
 const MAX_LINES = 450;
 
-export function LivingField({ nodes, themeLabels, openLabel, ownId, selectedId, selectedTheme, onSelect, className }: Props) {
+export function LivingField({ promptLabels, nodes, themeLabels, openLabel, ownId, selectedId, selectedTheme, onSelect, className }: Props) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const wrapRef = useRef<HTMLDivElement>(null);
   const simRef = useRef<Map<string, Sim>>(new Map());
@@ -304,8 +305,8 @@ export function LivingField({ nodes, themeLabels, openLabel, ownId, selectedId, 
           className="pointer-events-none absolute z-10 max-w-[16rem] bg-background/95 px-3 py-2 font-serif text-base leading-snug text-foreground shadow-sm"
           style={{ left: Math.min(tip.x + 12, sizeRef.current.w - 260), top: tip.y + 12 }}
         >
-          {tip.node.art && <p><span className="text-xs italic text-muted-foreground">Art is · Kunst ist </span>{tip.node.art}</p>}
-          {tip.node.act && <p className="mt-1"><span className="text-xs italic text-muted-foreground">I acted · Ich handelte </span>{tip.node.act}</p>}
+          {tip.node.art && <p><span className="text-xs italic text-muted-foreground">{promptLabels.art} </span>{tip.node.art}</p>}
+          {tip.node.act && <p className="mt-1"><span className="text-xs italic text-muted-foreground">{promptLabels.act} </span>{tip.node.act}</p>}
         </div>
       )}
     </div>
