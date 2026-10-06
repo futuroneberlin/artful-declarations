@@ -454,12 +454,13 @@ function Glossary() {
     <main className="relative min-h-screen overflow-hidden bg-background px-5 py-8 text-foreground md:px-10 md:py-10">
       <div className="research-grid pointer-events-none fixed inset-0 opacity-30" />
       <div className="relative">
-      <header className="flex items-baseline justify-between font-mono text-xs uppercase tracking-[0.2em] text-muted-foreground">
-        <h1>{L.glossaryTitle}</h1>
-        <div className="flex gap-5">
+      <header className="flex items-center gap-6">
+        <h1 className="shrink-0 font-mono text-xs uppercase tracking-[0.3em] text-muted-foreground">{L.glossaryTitle}</h1>
+        <div className="h-px min-w-6 flex-grow bg-foreground/10" />
+        <div className="flex shrink-0 gap-5 font-mono text-xs uppercase tracking-[0.2em] text-muted-foreground">
           {isDevMode && (
-            <span className="flex gap-2 normal-case tracking-normal">
-              <span className="font-mono text-[9px] uppercase tracking-[0.2em] text-muted-foreground">dev/test</span>
+            <span className="flex gap-2">
+              <span className="font-mono text-[9px] uppercase tracking-[0.2em]">dev/test</span>
               {[10, 100, 500].map((n) => <button key={n} onClick={() => setMock(mockData(n))} className="hover:text-foreground">mock {n}</button>)}
               {mock && <button onClick={() => setMock(null)} className="hover:text-foreground">real</button>}
             </span>
