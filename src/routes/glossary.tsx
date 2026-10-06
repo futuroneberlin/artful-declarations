@@ -402,8 +402,8 @@ function Glossary() {
       relationships += Math.max(0, assigned.length - 1);
       const timestamp = response.created_at ?? "";
       if (timestamp) {
-        earliest = earliest ? (timestamp < earliest ? timestamp : earliest) : timestamp;
-        latest = latest ? (timestamp > latest ? timestamp : latest) : timestamp;
+        if (!earliest || timestamp < earliest) earliest = timestamp;
+        if (!latest || timestamp > latest) latest = timestamp;
       }
       const text = `${response.art_is ?? ""} ${response.acted_through_art ?? ""}`.toLocaleLowerCase();
       for (const word of text.match(/[\p{L}]{4,}/gu) ?? []) {
