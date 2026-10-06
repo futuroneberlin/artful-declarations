@@ -50,7 +50,7 @@ function Blank({ value, onChange, label }: { value: string; onChange: (v: string
       value={value}
       onChange={(e) => onChange(e.target.value)}
       placeholder="______"
-      className="blank mt-5 w-full resize-none overflow-hidden border-0 border-b border-foreground/25 bg-transparent pb-4 font-serif text-2xl font-light leading-tight text-foreground outline-none transition-colors placeholder:text-muted-foreground focus:border-foreground md:text-4xl"
+      className="blank mt-6 w-full resize-none overflow-hidden border-0 border-b-2 border-foreground/40 bg-transparent pb-4 font-serif text-3xl font-bold leading-tight tracking-tight text-foreground outline-none transition-colors placeholder:text-foreground/20 focus:border-foreground md:text-5xl"
     />
   );
 }
@@ -93,7 +93,6 @@ function Participate() {
       acted_through_art: rb.data || null,
       session_id: getSessionId(),
       location_id,
-      exhibition_id: null,
       language: lang,
       consent: true,
     });
@@ -130,12 +129,20 @@ function Participate() {
 
       <form onSubmit={submit} className="mt-16 md:mt-24">
           <div className="grid gap-px border-y border-foreground/15 bg-foreground/15 md:grid-cols-2">
-            <label className="block bg-background p-6 md:min-h-56 md:p-9">
-              <span className="font-mono text-[10px] uppercase text-muted-foreground">01 / {L.artIs}</span>
+            <label className="flex flex-col bg-background p-6 md:min-h-72 md:p-10">
+              <header className="flex items-center gap-4">
+                <span className="shrink-0 font-mono text-[10px] uppercase tracking-[0.18em] text-muted-foreground">01</span>
+                <div className="h-px flex-grow bg-foreground/10" />
+              </header>
+              <h2 className="mt-8 font-serif text-4xl font-bold leading-none tracking-tighter md:text-6xl">{L.artIs}</h2>
               <Blank value={a} onChange={setA} label={L.artIs} />
             </label>
-            <label className="block bg-background p-6 md:min-h-56 md:p-9">
-              <span className="font-mono text-[10px] uppercase text-muted-foreground">02 / {L.acted}</span>
+            <label className="flex flex-col bg-background p-6 md:min-h-72 md:p-10">
+              <header className="flex items-center gap-4">
+                <span className="shrink-0 font-mono text-[10px] uppercase tracking-[0.18em] text-muted-foreground">02</span>
+                <div className="h-px flex-grow bg-foreground/10" />
+              </header>
+              <h2 className="mt-8 font-serif text-3xl font-bold leading-[1.05] tracking-tighter md:text-5xl">{L.acted}</h2>
               <Blank value={b} onChange={setB} label={L.acted} />
             </label>
           </div>
