@@ -479,17 +479,20 @@ function Glossary() {
         <a href="#visualisation" className="py-1 hover:text-foreground">04 — {L.fieldTitle}</a>
       </nav>
 
-      <div className="mt-9 flex flex-col gap-14 lg:grid lg:grid-cols-[1fr_2fr_1fr] lg:gap-10">
+      <div className="mt-9 flex flex-col gap-14 lg:grid lg:grid-cols-3 lg:gap-x-12">
         {/* Living visualisation */}
-        <section id="visualisation" className="order-1 lg:order-2 lg:row-span-2" aria-label={L.fieldTitle}>
-          <p className="font-mono text-[10px] uppercase text-muted-foreground">04</p>
-          <h2 className="mt-1 font-serif text-3xl font-light uppercase">{L.fieldTitle}</h2>
-          <p className="mt-2 max-w-md text-sm text-muted-foreground">→ {L.visualisationQuestion}</p>
-          <div className="mt-3 max-w-md border-l border-foreground/15 pl-3">
-            <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-muted-foreground">Field relation</p>
-            <p className="mt-2 text-sm text-muted-foreground">Theory informs action; action accumulates as a collective field. The center tracks how meanings and gestures begin to relate over time.</p>
+        <section id="visualisation" className="order-4 lg:col-span-3 lg:mt-4 lg:border-t lg:border-foreground/10 lg:pt-12" aria-label={L.fieldTitle}>
+          <div className="flex items-center gap-4">
+            <span className="shrink-0 font-mono text-[10px] uppercase tracking-[0.18em] text-muted-foreground">04</span>
+            <h2 className="shrink-0 font-serif text-2xl font-bold tracking-tight md:text-3xl">{L.fieldTitle}</h2>
+            <p className="hidden shrink-0 text-sm italic text-muted-foreground md:block">→ {L.visualisationQuestion}</p>
+            <div className="h-px flex-grow bg-foreground/10" />
           </div>
-          <div className="mt-4 grid grid-cols-2 gap-3 max-w-md text-xs text-muted-foreground">
+          <div className="mt-4 max-w-xl">
+            <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-muted-foreground">Field relation</p>
+            <p className="mt-2 text-sm leading-relaxed text-muted-foreground">Theory informs action; action accumulates as a collective field. The center tracks how meanings and gestures begin to relate over time.</p>
+          </div>
+          <div className="mt-6 grid grid-cols-2 gap-3 text-xs text-muted-foreground md:grid-cols-4">
             <div className="rounded border border-foreground/10 bg-foreground/[0.02] p-2">
               <div className="font-mono uppercase tracking-[0.14em] text-[9px] text-muted-foreground">Active relation</div>
               <div className="mt-2 font-serif text-lg text-foreground">{fieldSummary.label}</div>
@@ -507,7 +510,7 @@ function Glossary() {
               <div className="mt-2 font-serif text-lg text-foreground">{signals.earliest && signals.latest ? `${new Date(signals.earliest).toLocaleDateString(undefined, { month: "short", day: "numeric" })}–${new Date(signals.latest).toLocaleDateString(undefined, { month: "short", day: "numeric" })}` : "—"}</div>
             </div>
           </div>
-          <div className="relative mt-4 h-[62vh] min-h-[360px] lg:sticky lg:top-6 lg:h-[78vh]">
+          <div className="relative mt-6 h-[62vh] min-h-[380px]">
             {nodes.length === 0 && (
               <p className="absolute inset-0 flex items-center justify-center font-serif text-3xl text-muted-foreground md:text-5xl">{L.fieldWaiting}</p>
             )}
@@ -529,11 +532,14 @@ function Glossary() {
         </section>
 
         {/* Theory */}
-        <aside id="theory" className="order-2 lg:order-1" aria-label={L.theoryTitle}>
-          <p className="font-mono text-[10px] uppercase text-muted-foreground">01</p>
-          <h2 className="mt-1 font-serif text-3xl font-light uppercase">{L.theoryTitle}</h2>
-          <p className="mt-2 text-sm text-muted-foreground">→ {L.theoryQuestion}</p>
-          <div className="mt-3 border-l border-foreground/15 pl-3 text-sm text-muted-foreground">
+        <aside id="theory" className="order-1" aria-label={L.theoryTitle}>
+          <div className="flex items-center gap-4">
+            <span className="shrink-0 font-mono text-[10px] uppercase tracking-[0.18em] text-muted-foreground">01</span>
+            <div className="h-px flex-grow bg-foreground/10" />
+          </div>
+          <h2 className="mt-4 font-serif text-2xl font-bold tracking-tight md:text-3xl">{L.theoryTitle}</h2>
+          <p className="mt-2 text-sm italic text-muted-foreground">→ {L.theoryQuestion}</p>
+          <div className="mt-3 border-l border-foreground/15 pl-3 text-sm leading-relaxed text-muted-foreground">
             Theoretical knowledge frames the field. It establishes the terms through which actions, relationships and recurring attitudes become legible.
           </div>
           <div className="mt-6 space-y-8">
@@ -574,13 +580,16 @@ function Glossary() {
         </aside>
 
         {/* Participation */}
-        <aside id="participation" className="order-3 lg:order-3" aria-label={L.participationTitle}>
-          <p className="font-mono text-[10px] uppercase text-muted-foreground">02</p>
-          <h2 className="mt-1 font-serif text-3xl font-light uppercase">{L.participationTitle}</h2>
-          <p className="mt-2 text-sm text-muted-foreground">→ {L.participationQuestion}</p>
-          <div className="mt-6 border-y border-foreground/10 py-4 font-mono text-[11px] uppercase text-muted-foreground">
-            <p>{L.artIs} ______</p>
-            <p className="mt-2">{L.acted} ______</p>
+        <aside id="participation" className="order-2 lg:border-l lg:border-foreground/10 lg:pl-12" aria-label={L.participationTitle}>
+          <div className="flex items-center gap-4">
+            <span className="shrink-0 font-mono text-[10px] uppercase tracking-[0.18em] text-muted-foreground">02</span>
+            <div className="h-px flex-grow bg-foreground/10" />
+          </div>
+          <h2 className="mt-4 font-serif text-2xl font-bold tracking-tight md:text-3xl">{L.participationTitle}</h2>
+          <p className="mt-2 text-sm italic text-muted-foreground">→ {L.participationQuestion}</p>
+          <div className="mt-6 space-y-3 border-y border-foreground/10 py-5">
+            <p className="font-serif text-lg font-bold tracking-tight">{L.artIs} <span className="font-light text-muted-foreground">______</span></p>
+            <p className="font-serif text-sm font-bold leading-snug tracking-tight md:text-base">{L.acted} <span className="font-light text-muted-foreground">______</span></p>
           </div>
           <p className="mt-3 font-mono text-[11px] text-muted-foreground">{allResponses.length} {L.statementsLabel}</p>
           {isDevMode && mock && <p className="mt-2 font-mono text-[9px] uppercase tracking-[0.14em] text-muted-foreground">Mockup data visible in development mode only</p>}
@@ -603,10 +612,13 @@ function Glossary() {
         </aside>
 
         {/* Emerging connections */}
-        <aside id="connections" className="order-4 lg:order-3" aria-label={L.connectionsTitle}>
-          <p className="font-mono text-[10px] uppercase text-muted-foreground">03</p>
-          <h2 className="mt-1 font-serif text-3xl font-light uppercase">{L.connectionsTitle}</h2>
-          <p className="mt-2 text-sm text-muted-foreground">→ {L.connectionsQuestion}</p>
+        <aside id="connections" className="order-3 lg:border-l lg:border-foreground/10 lg:pl-12" aria-label={L.connectionsTitle}>
+          <div className="flex items-center gap-4">
+            <span className="shrink-0 font-mono text-[10px] uppercase tracking-[0.18em] text-muted-foreground">03</span>
+            <div className="h-px flex-grow bg-foreground/10" />
+          </div>
+          <h2 className="mt-4 font-serif text-2xl font-bold tracking-tight md:text-3xl">{L.connectionsTitle}</h2>
+          <p className="mt-2 text-sm italic text-muted-foreground">→ {L.connectionsQuestion}</p>
 
           <dl className="mt-6 grid grid-cols-2 gap-x-4 gap-y-5 border-y border-foreground/10 py-5">
             <div>
