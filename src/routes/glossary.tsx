@@ -236,7 +236,7 @@ function Glossary() {
 
   const loadField = useCallback(async () => {
     const [r, l] = await Promise.all([
-      supabase.from("public_responses").select("id, art_is, acted_through_art, created_at, language, exhibition_id").order("created_at", { ascending: false }).limit(500),
+      supabase.from("public_responses").select("id, art_is, acted_through_art, created_at, language").order("created_at", { ascending: false }).limit(500),
       supabase.from("public_response_themes").select("response_id, theme_key").limit(2000),
     ]);
 
@@ -255,7 +255,7 @@ function Glossary() {
     setResourceCursor((current) => {
       const next = Math.min(current + 3, ONLINE_RESEARCH_PORTALS.length);
       setRefs((existing) => {
-        const portalIds = new Set(ONLINE_RESEARCH_PORTALS.map((item) => item.id));
+        const portalIds = new Set<string>(ONLINE_RESEARCH_PORTALS.map((item) => item.id));
         const keep = existing.filter((item) => !portalIds.has(item.id));
         const nextBatch = ONLINE_RESEARCH_PORTALS.slice(0, next).map((item) => ({ ...item } as Reference));
         return [...nextBatch, ...keep];

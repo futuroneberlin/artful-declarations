@@ -93,7 +93,6 @@ function Participate() {
       acted_through_art: rb.data || null,
       session_id: getSessionId(),
       location_id,
-      exhibition_id: null,
       language: lang,
       consent: true,
     });
