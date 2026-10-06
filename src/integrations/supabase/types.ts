@@ -123,7 +123,6 @@ export type Database = {
           art_is: string | null
           consent: boolean
           created_at: string
-          exhibition_id: string | null
           hidden: boolean
           id: string
           language: string | null
@@ -135,7 +134,6 @@ export type Database = {
           art_is?: string | null
           consent: boolean
           created_at?: string
-          exhibition_id?: string | null
           hidden?: boolean
           id?: string
           language?: string | null
@@ -147,7 +145,6 @@ export type Database = {
           art_is?: string | null
           consent?: boolean
           created_at?: string
-          exhibition_id?: string | null
           hidden?: boolean
           id?: string
           language?: string | null
@@ -224,7 +221,6 @@ export type Database = {
           acted_through_art: string | null
           art_is: string | null
           created_at: string | null
-          exhibition_id: string | null
           id: string | null
           language: string | null
         }
@@ -232,7 +228,6 @@ export type Database = {
           acted_through_art?: string | null
           art_is?: string | null
           created_at?: string | null
-          exhibition_id?: string | null
           id?: string | null
           language?: string | null
         }
@@ -240,7 +235,6 @@ export type Database = {
           acted_through_art?: string | null
           art_is?: string | null
           created_at?: string | null
-          exhibition_id?: string | null
           id?: string | null
           language?: string | null
         }
