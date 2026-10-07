@@ -82,9 +82,11 @@ export function LivingField({ promptLabels, nodes, themeLabels, openLabel, ownId
   }, [nodes, ownId]);
 
   useEffect(() => {
-    const canvas = canvasRef.current!;
-    const wrap = wrapRef.current!;
-    const ctx = canvas.getContext("2d")!;
+    const canvas = canvasRef.current;
+    const wrap = wrapRef.current;
+    if (!canvas || !wrap) return;
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return;
     const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     let dpr = Math.min(2, window.devicePixelRatio || 1);
     let raf = 0;
@@ -150,7 +152,7 @@ export function LivingField({ promptLabels, nodes, themeLabels, openLabel, ownId
       const showText = sims.length <= 40;
       const motion = reduced ? 0.15 : 1;
       for (const s of sims) {
-        const target = p.selectedTheme && s.themes.includes(p.selectedTheme) ? anc.get(p.selectedTheme)! : anc.get(s.theme) ?? anc.get(OPEN)!;
+        const target = (p.selectedTheme && s.themes.includes(p.selectedTheme) ? anc.get(p.selectedTheme) : anc.get(s.theme)) ?? { x: w / 2, y: h / 2 };
         const pull = p.selectedTheme && s.themes.includes(p.selectedTheme) ? 0.0016 : 0.0006;
         s.vx += (target.x - s.x) * pull;
         s.vy += (target.y - s.y) * pull;
@@ -163,9 +165,11 @@ export function LivingField({ promptLabels, nodes, themeLabels, openLabel, ownId
         const n = group.length;
         const samples = Math.min(n, 8);
         for (let i = 0; i < n; i++) {
-          const a = group[i]!;
+          const a = group[i];
+          if (!a) continue;
           for (let k = 1; k <= samples; k++) {
-            const b = group[(i + k) % n]!;
+            const b = group[(i + k) % n];
+            if (!b) continue;
             if (a === b) continue;
             const dx = a.x - b.x, dy = a.y - b.y;
             const d2 = dx * dx + dy * dy + 0.01;
@@ -197,7 +201,8 @@ export function LivingField({ promptLabels, nodes, themeLabels, openLabel, ownId
           if (key === OPEN) continue;
           const hl = p.selectedTheme === key;
           for (let i = 0; i < group.length && lines < MAX_LINES; i++) {
-            const a = group[i]!, b = group[(i + 1) % group.length]!;
+            const a = group[i], b = group[(i + 1) % group.length];
+            if (!a || !b) continue;
             if (a === b) continue;
             const d = Math.hypot(a.x - b.x, a.y - b.y);
             if (d > 160) continue;
@@ -210,6 +215,8 @@ export function LivingField({ promptLabels, nodes, themeLabels, openLabel, ownId
 
       // Forms
       const now = performance.now();
+      const occupied: { x: number; y: number; w: number; h: number }[] = [];
+      const fits = (box: { x: number; y: number; w: number; h: number }) => !occupied.some((other) => box.x < other.x + other.w && box.x + box.w > other.x && box.y < other.y + other.h && box.y + box.h > other.y);
       for (const s of sims) {
         const since = now - s.born;
         const glow = Math.max(0, 1 - since / 6000);
@@ -242,14 +249,22 @@ export function LivingField({ promptLabels, nodes, themeLabels, openLabel, ownId
         if (showText && s.text) {
           ctx.globalAlpha = isOwn || isSel ? 0.95 : 0.6 * dim;
           ctx.fillStyle = C.fg;
-          ctx.font = `${isOwn || isSel ? 20 : 16}px 'Instrument Serif', Georgia, serif`;
+          ctx.font = `14px Helvetica, Arial, sans-serif`;
           ctx.textAlign = "left";
-          ctx.fillText(s.text, s.x + r + 6, s.y + 5);
+          let text = s.text;
+          const maxWidth = Math.min(160, w - 24);
+          while (text.length > 1 && ctx.measureText(text + "…").width > maxWidth) text = text.slice(0, -1);
+          if (text !== s.text) text += "…";
+          const width = ctx.measureText(text).width;
+          const x = Math.max(8, Math.min(w - width - 8, s.x + r + 6));
+          const y = Math.max(20, Math.min(h - 12, s.y + 5));
+          const box = { x: x - 3, y: y - 16, w: width + 6, h: 24 };
+          if (fits(box)) { occupied.push(box); ctx.fillText(text, x, y); }
         }
       }
 
       // Cluster labels
-      ctx.font = "italic 15px 'Instrument Serif', Georgia, serif";
+      ctx.font = "13px Helvetica, Arial, sans-serif";
       ctx.textAlign = "center";
       for (const [key, group] of byTheme) {
         if (group.length < 2 && key !== p.selectedTheme) continue;
@@ -258,7 +273,12 @@ export function LivingField({ promptLabels, nodes, themeLabels, openLabel, ownId
         cx /= group.length; cy /= group.length;
         ctx.globalAlpha = p.selectedTheme === key ? 0.9 : 0.45;
         ctx.fillStyle = C.muted;
-        ctx.fillText(key === OPEN ? p.openLabel : p.themeLabels[key] ?? key, cx, Math.max(14, top - 10));
+        const label = key === OPEN ? p.openLabel : p.themeLabels[key] ?? key;
+        const width = ctx.measureText(label).width;
+        const x = Math.max(width / 2 + 8, Math.min(w - width / 2 - 8, cx));
+        const y = Math.max(16, top - 20);
+        const box = { x: x - width / 2 - 4, y: y - 14, w: width + 8, h: 22 };
+        if (fits(box)) { occupied.push(box); ctx.fillText(label, x, y); }
       }
       ctx.globalAlpha = 1;
       raf = requestAnimationFrame(step);
@@ -279,7 +299,9 @@ export function LivingField({ promptLabels, nodes, themeLabels, openLabel, ownId
   }, []);
 
   const pick = (clientX: number, clientY: number) => {
-    const rect = canvasRef.current!.getBoundingClientRect();
+    const canvas = canvasRef.current;
+    if (!canvas) return { best: null, x: 0, y: 0 };
+    const rect = canvas.getBoundingClientRect();
     const x = clientX - rect.left, y = clientY - rect.top;
     let best: Sim | null = null, bestD = 22;
     for (const s of simRef.current.values()) {
@@ -313,8 +335,8 @@ export function LivingField({ promptLabels, nodes, themeLabels, openLabel, ownId
       />
       {tip && (
         <div
-          className="pointer-events-none absolute z-10 max-w-[16rem] bg-background/95 px-3 py-2 font-serif text-base leading-snug text-foreground shadow-sm"
-          style={{ left: Math.min(tip.x + 12, sizeRef.current.w - 260), top: tip.y + 12 }}
+          className="pointer-events-none absolute z-10 max-w-[min(16rem,calc(100%-16px))] bg-background/95 px-3 py-2 font-serif text-base leading-snug text-foreground shadow-sm"
+          style={{ left: Math.max(8, Math.min(tip.x + 12, sizeRef.current.w - 264)), top: Math.max(8, Math.min(tip.y + 12, sizeRef.current.h - 150)) }}
         >
           {tip.node.art && <p><span className="text-xs italic text-muted-foreground">{promptLabels.art} </span>{tip.node.art}</p>}
           {tip.node.act && <p className="mt-1"><span className="text-xs italic text-muted-foreground">{promptLabels.act} </span>{tip.node.act}</p>}
