@@ -4,6 +4,7 @@ import { z } from "zod";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { t, type Lang } from "@/lib/i18n";
+import { timestamp } from "@/lib/glossary-relations";
 
 export const Route = createFileRoute("/")({
   validateSearch: (s: Record<string, unknown>): { loc?: string } => {
@@ -63,6 +64,7 @@ function Participate() {
   const [b, setB] = useState("");
   const [state, setState] = useState<"idle" | "sending">("idle");
   const [msg, setMsg] = useState<string | null>(null);
+  const [clock, setClock] = useState<string | null>(null);
   const L = t[lang];
 
   useEffect(() => {
@@ -71,6 +73,12 @@ function Participate() {
     else if (navigator.language?.toLowerCase().startsWith("de")) setLang("de");
   }, []);
   useEffect(() => { document.documentElement.lang = lang; }, [lang]);
+  useEffect(() => {
+    const tick = () => setClock(new Date().toISOString());
+    tick();
+    const timer = window.setInterval(tick, 1000);
+    return () => window.clearInterval(timer);
+  }, []);
 
   const switchLang = (l: Lang) => { setLang(l); localStorage.setItem("aas_lang", l); };
 
@@ -128,6 +136,7 @@ function Participate() {
       </header>
 
       <form onSubmit={submit} className="mt-10 md:mt-24">
+          <p className="mb-5 flex flex-wrap gap-x-3 gap-y-1 font-mono text-xs text-muted-foreground"><span>{L.clock}</span><time dateTime={clock ?? undefined}>{clock ? timestamp(clock, lang) : "—"}</time></p>
           <div className="grid gap-px border-y border-foreground/15 bg-foreground/15 md:grid-cols-2">
             <label className="flex flex-col bg-background px-3 py-7 sm:p-6 md:min-h-72 md:p-10">
               <header className="flex items-center gap-4">
