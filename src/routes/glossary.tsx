@@ -454,12 +454,12 @@ function Glossary() {
     <main className="relative min-h-screen overflow-hidden bg-background px-5 py-8 text-foreground md:px-10 md:py-10">
       <div className="research-grid pointer-events-none fixed inset-0 opacity-30" />
       <div className="relative">
-      <header className="flex items-center gap-6">
-        <h1 className="shrink-0 font-mono text-xs uppercase tracking-[0.3em] text-muted-foreground">{L.glossaryTitle}</h1>
-        <div className="h-px min-w-6 flex-grow bg-foreground/10" />
-        <div className="flex shrink-0 gap-5 font-mono text-xs uppercase tracking-[0.2em] text-muted-foreground">
+      <header className="flex flex-wrap items-center gap-x-6 gap-y-3">
+        <h1 className="shrink-0 font-mono text-xs uppercase tracking-[0.2em] md:tracking-[0.3em] text-muted-foreground">{L.glossaryTitle}</h1>
+        <div className="hidden h-px min-w-6 flex-grow bg-foreground/10 sm:block" />
+        <div className="ml-auto flex min-w-0 flex-wrap gap-x-5 gap-y-2 font-mono text-xs uppercase tracking-[0.2em] text-muted-foreground">
           {isDevMode && (
-            <span className="flex gap-2">
+            <span className="flex flex-wrap gap-2">
               <span className="font-mono text-[9px] uppercase tracking-[0.2em]">dev/test</span>
               {[10, 100, 500].map((n) => <button key={n} onClick={() => setMock(mockData(n))} className="hover:text-foreground">mock {n}</button>)}
               {mock && <button onClick={() => setMock(null)} className="hover:text-foreground">real</button>}
@@ -473,7 +473,7 @@ function Glossary() {
         {showArrival && <p className="fade-up font-serif text-xl italic md:text-2xl" aria-live="polite">{L.success}</p>}
       </div>
 
-      <nav className="mt-7 grid border-y border-foreground/10 py-3 font-mono text-[10px] uppercase text-muted-foreground sm:grid-cols-2 lg:grid-cols-4" aria-label={L.glossaryTitle}>
+      <nav className="mt-7 grid border-y border-foreground/10 py-3 font-mono text-[11px] uppercase text-muted-foreground grid-cols-2 gap-x-4 sm:grid-cols-2 lg:grid-cols-4" aria-label={L.glossaryTitle}>
         <a href="#theory" className="py-1 hover:text-foreground">01 — {L.theoryTitle}</a>
         <a href="#participation" className="py-1 hover:text-foreground">02 — {L.participationTitle}</a>
         <a href="#connections" className="py-1 hover:text-foreground">03 — {L.connectionsTitle}</a>
@@ -485,35 +485,36 @@ function Glossary() {
         <section id="visualisation" className="order-4 lg:col-span-3 lg:mt-4 lg:border-t lg:border-foreground/10 lg:pt-12" aria-label={L.fieldTitle}>
           <div className="flex items-center gap-4">
             <span className="shrink-0 font-mono text-[10px] uppercase tracking-[0.18em] text-muted-foreground">04</span>
-            <h2 className="shrink-0 font-serif text-2xl font-bold tracking-tight md:text-3xl">{L.fieldTitle}</h2>
+            <h2 className="min-w-0 font-serif leading-tight text-2xl font-bold tracking-tight md:text-3xl">{L.fieldTitle}</h2>
             <p className="hidden shrink-0 text-sm italic text-muted-foreground md:block">→ {L.visualisationQuestion}</p>
-            <div className="h-px flex-grow bg-foreground/10" />
+            <div className="hidden h-px flex-grow sm:block bg-foreground/10" />
           </div>
+          <p className="mt-2 text-sm italic text-muted-foreground md:hidden">→ {L.visualisationQuestion}</p>
           <div className="mt-4 max-w-xl">
             <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-muted-foreground">Field relation</p>
             <p className="mt-2 text-sm leading-relaxed text-muted-foreground">Theory informs action; action accumulates as a collective field. The center tracks how meanings and gestures begin to relate over time.</p>
           </div>
           <div className="mt-6 grid grid-cols-2 gap-3 text-xs text-muted-foreground md:grid-cols-4">
             <div className="rounded border border-foreground/10 bg-foreground/[0.02] p-2">
-              <div className="font-mono uppercase tracking-[0.14em] text-[9px] text-muted-foreground">Active relation</div>
-              <div className="mt-2 font-serif text-lg text-foreground">{fieldSummary.label}</div>
+              <div className="font-mono uppercase tracking-[0.14em] text-[10px] text-muted-foreground">Active relation</div>
+              <div className="mt-2 break-words font-serif text-base leading-tight text-foreground md:text-lg">{fieldSummary.label}</div>
             </div>
             <div className="rounded border border-foreground/10 bg-foreground/[0.02] p-2">
-              <div className="font-mono uppercase tracking-[0.14em] text-[9px] text-muted-foreground">Field density</div>
-              <div className="mt-2 font-serif text-lg text-foreground">{allResponses.length}</div>
+              <div className="font-mono uppercase tracking-[0.14em] text-[10px] text-muted-foreground">Field density</div>
+              <div className="mt-2 break-words font-serif text-base leading-tight text-foreground md:text-lg">{allResponses.length}</div>
             </div>
             <div className="rounded border border-foreground/10 bg-foreground/[0.02] p-2">
-              <div className="font-mono uppercase tracking-[0.14em] text-[9px] text-muted-foreground">Actions</div>
-              <div className="mt-2 font-serif text-lg text-foreground">{signals.actions}</div>
+              <div className="font-mono uppercase tracking-[0.14em] text-[10px] text-muted-foreground">Actions</div>
+              <div className="mt-2 break-words font-serif text-base leading-tight text-foreground md:text-lg">{signals.actions}</div>
             </div>
             <div className="rounded border border-foreground/10 bg-foreground/[0.02] p-2">
-              <div className="font-mono uppercase tracking-[0.14em] text-[9px] text-muted-foreground">Time</div>
-              <div className="mt-2 font-serif text-lg text-foreground">{signals.earliest && signals.latest ? `${new Date(signals.earliest).toLocaleDateString(undefined, { month: "short", day: "numeric" })}–${new Date(signals.latest).toLocaleDateString(undefined, { month: "short", day: "numeric" })}` : "—"}</div>
+              <div className="font-mono uppercase tracking-[0.14em] text-[10px] text-muted-foreground">Time</div>
+              <div className="mt-2 break-words font-serif text-base leading-tight text-foreground md:text-lg">{signals.earliest && signals.latest ? `${new Date(signals.earliest).toLocaleDateString(undefined, { month: "short", day: "numeric" })}–${new Date(signals.latest).toLocaleDateString(undefined, { month: "short", day: "numeric" })}` : "—"}</div>
             </div>
           </div>
-          <div className="relative mt-6 h-[62vh] min-h-[380px]">
+          <div className="relative -mx-5 mt-6 h-[70vh] min-h-[420px] border-y border-foreground/10 md:mx-0 md:h-[62vh] md:min-h-[380px] md:border-0">
             {nodes.length === 0 && (
-              <p className="absolute inset-0 flex items-center justify-center font-serif text-3xl text-muted-foreground md:text-5xl">{L.fieldWaiting}</p>
+              <p className="absolute inset-0 flex items-center justify-center px-6 text-center font-serif text-2xl text-muted-foreground md:text-5xl">{L.fieldWaiting}</p>
             )}
             <LivingField
               nodes={nodes}
@@ -538,7 +539,7 @@ function Glossary() {
             <span className="shrink-0 font-mono text-[10px] uppercase tracking-[0.18em] text-muted-foreground">01</span>
             <div className="h-px flex-grow bg-foreground/10" />
           </div>
-          <h2 className="mt-4 font-serif text-2xl font-bold tracking-tight md:text-3xl">{L.theoryTitle}</h2>
+          <h2 className="mt-4 font-serif text-3xl font-bold leading-tight tracking-tight md:text-3xl">{L.theoryTitle}</h2>
           <p className="mt-2 text-sm italic text-muted-foreground">→ {L.theoryQuestion}</p>
           <div className="mt-3 border-l border-foreground/15 pl-3 text-sm leading-relaxed text-muted-foreground">
             Theoretical knowledge frames the field. It establishes the terms through which actions, relationships and recurring attitudes become legible.
@@ -586,7 +587,7 @@ function Glossary() {
             <span className="shrink-0 font-mono text-[10px] uppercase tracking-[0.18em] text-muted-foreground">02</span>
             <div className="h-px flex-grow bg-foreground/10" />
           </div>
-          <h2 className="mt-4 font-serif text-2xl font-bold tracking-tight md:text-3xl">{L.participationTitle}</h2>
+          <h2 className="mt-4 font-serif text-3xl font-bold leading-tight tracking-tight md:text-3xl">{L.participationTitle}</h2>
           <p className="mt-2 text-sm italic text-muted-foreground">→ {L.participationQuestion}</p>
           <div className="mt-6 space-y-3 border-y border-foreground/10 py-5">
             <p className="font-serif text-lg font-bold tracking-tight">{L.artIs} <span className="font-light text-muted-foreground">______</span></p>
@@ -618,7 +619,7 @@ function Glossary() {
             <span className="shrink-0 font-mono text-[10px] uppercase tracking-[0.18em] text-muted-foreground">03</span>
             <div className="h-px flex-grow bg-foreground/10" />
           </div>
-          <h2 className="mt-4 font-serif text-2xl font-bold tracking-tight md:text-3xl">{L.connectionsTitle}</h2>
+          <h2 className="mt-4 font-serif text-3xl font-bold leading-tight tracking-tight md:text-3xl">{L.connectionsTitle}</h2>
           <p className="mt-2 text-sm italic text-muted-foreground">→ {L.connectionsQuestion}</p>
 
           <dl className="mt-6 grid grid-cols-2 gap-x-4 gap-y-5 border-y border-foreground/10 py-5">
