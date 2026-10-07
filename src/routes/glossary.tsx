@@ -7,7 +7,7 @@ import { t, type Lang } from "@/lib/i18n";
 import { extractRelations, POLES, poleLabel, timestamp, type Extraction, type Statement } from "@/lib/glossary-relations";
 
 export const Route = createFileRoute("/glossary")({
-  validateSearch: (search: Record<string, unknown>): { new?: string } => typeof search.new === "string" ? { new: search.new.slice(0, 50) } : {},
+  validateSearch: (search: Record<string, unknown>): { new?: string } => typeof search["new"] === "string" ? { new: search["new"].slice(0, 50) } : {},
   head: () => ({ meta: [
     { title: "Living Glossary — Art as Stance" },
     { name: "description", content: "Attitudes, gestures and social action vectors: a timestamped living glossary of emerging connections, with Futur One as conceptual reference." },
@@ -101,7 +101,7 @@ function Glossary() {
   const filtered = useMemo(() => (view === "participation" ? all : eligible).filter((row) => (view === "participation" || ((!pole || relations.get(row.id)?.poles.includes(pole)) && (!echo || relations.get(row.id)?.echoes.includes(echo)))) && `${row.art_is ?? ""} ${row.acted_through_art ?? ""}`.toLocaleLowerCase().includes(query.toLocaleLowerCase())), [all, eligible, view, pole, echo, relations, query]);
   const pages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
   const safePage = Math.min(page, pages - 1);
-  const ownId = highlightOwn ? newId : null;
+  const ownId = highlightOwn ? newId ?? null : null;
   const visible = filtered.slice(safePage * PAGE_SIZE, (safePage + 1) * PAGE_SIZE);
   if (ownId && safePage === 0) {
     const own = filtered.find((row) => row.id === ownId);
