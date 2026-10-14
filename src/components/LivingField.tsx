@@ -54,7 +54,7 @@ export function LivingField({ promptLabels, nodes, themeLabels, openLabel, ownId
     const firstLoad = sim.size === 0;
     const newest = nodes.reduce((m, n) => Math.max(m, Date.parse(n.createdAt) || 0), 0);
     nodesById.current = new Map(nodes.map((n) => [n.id, n]));
-    for (const n of nodes) {
+    for (const [index, n] of nodes.entries()) {
       const len = (n.art?.length ?? 0) + (n.act?.length ?? 0);
       const kind = n.art && n.act ? "both" : n.art ? "art" : "act";
       const theme = n.themes[0] ?? OPEN;
@@ -65,11 +65,12 @@ export function LivingField({ promptLabels, nodes, themeLabels, openLabel, ownId
         continue;
       }
       const fromEdge = !firstLoad || n.id === ownId;
-      const a = Math.random() * Math.PI * 2;
+      const angle = (index / Math.max(1, nodes.length)) * Math.PI * 2;
+      const radius = Math.min(w, h) * 0.28;
       sim.set(n.id, {
         id: n.id,
-        x: fromEdge ? w / 2 + Math.cos(a) * w * 0.6 : w * (0.15 + Math.random() * 0.7),
-        y: fromEdge ? h / 2 + Math.sin(a) * h * 0.6 : h * (0.15 + Math.random() * 0.7),
+        x: fromEdge ? w / 2 + Math.cos(angle) * w * 0.6 : w / 2 + Math.cos(angle) * radius,
+        y: fromEdge ? h / 2 + Math.sin(angle) * h * 0.6 : h / 2 + Math.sin(angle) * radius,
         vx: 0, vy: 0,
         r: 3 + Math.min(9, Math.sqrt(len) * 0.9),
         born: fromEdge ? now : now - 10000,
@@ -149,7 +150,7 @@ export function LivingField({ promptLabels, nodes, themeLabels, openLabel, ownId
         arr.push(s); byTheme.set(s.theme, arr);
       }
       const scale = sims.length < 20 ? 2.4 : sims.length < 80 ? 1.5 : 1;
-      const showText = sims.length <= 40;
+      const showText = sims.length <= 32 && w > 480;
       const motion = reduced ? 0.15 : 1;
       for (const s of sims) {
         const target = (p.selectedTheme && s.themes.includes(p.selectedTheme) ? anc.get(p.selectedTheme) : anc.get(s.theme)) ?? { x: w / 2, y: h / 2 };
@@ -178,6 +179,26 @@ export function LivingField({ promptLabels, nodes, themeLabels, openLabel, ownId
               const f = 0.04 / Math.sqrt(d2);
               a.vx += dx * f; a.vy += dy * f;
             }
+          }
+        }
+      }
+      for (let i = 0; i < sims.length; i++) {
+        const a = sims[i];
+        if (!a) continue;
+        for (let j = i + 1; j < sims.length; j++) {
+          const b = sims[j];
+          if (!b) continue;
+          const dx = b.x - a.x;
+          const dy = b.y - a.y;
+          const d2 = dx * dx + dy * dy + 0.01;
+          const min = (a.r + b.r) * 1.9;
+          if (d2 < min * min) {
+            const d = Math.sqrt(d2);
+            const nx = dx / d;
+            const ny = dy / d;
+            const push = (min - d) * 0.045;
+            a.vx -= nx * push; a.vy -= ny * push;
+            b.vx += nx * push; b.vy += ny * push;
           }
         }
       }

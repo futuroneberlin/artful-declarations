@@ -1,4 +1,4 @@
-import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useRef, useState } from "react";
 import { z } from "zod";
 import { Button } from "@/components/ui/button";
@@ -58,13 +58,15 @@ function Blank({ value, onChange, label }: { value: string; onChange: (v: string
 
 function Participate() {
   const { loc } = Route.useSearch();
-  const navigate = useNavigate();
   const [lang, setLang] = useState<Lang>("en");
   const [a, setA] = useState("");
   const [b, setB] = useState("");
+  const [consent, setConsent] = useState(false);
   const [state, setState] = useState<"idle" | "sending">("idle");
   const [msg, setMsg] = useState<string | null>(null);
   const [clock, setClock] = useState<string | null>(null);
+  const [submittedAt, setSubmittedAt] = useState<string | null>(null);
+  const [submittedId, setSubmittedId] = useState<string | null>(null);
   const L = t[lang];
 
   useEffect(() => {
@@ -81,6 +83,8 @@ function Participate() {
   }, []);
 
   const switchLang = (l: Lang) => { setLang(l); localStorage.setItem("aas_lang", l); };
+  const localNow = clock ? new Intl.DateTimeFormat(lang === "de" ? "de-DE" : "en-GB", { dateStyle: "medium", timeStyle: "medium" }).format(new Date(clock)) : "—";
+  const localSubmitted = submittedAt ? new Intl.DateTimeFormat(lang === "de" ? "de-DE" : "en-GB", { dateStyle: "medium", timeStyle: "medium" }).format(new Date(submittedAt)) : null;
 
   async function submit(e: React.FormEvent) {
     e.preventDefault();
@@ -88,6 +92,7 @@ function Participate() {
     const ra = answer.safeParse(a), rb = answer.safeParse(b);
     if (!ra.success || !rb.success) return setMsg(L.error);
     if (!ra.data && !rb.data) return setMsg(L.needOne);
+    if (!consent) return setMsg(L.needConsent);
     setState("sending");
     let location_id: string | null = null;
     if (loc) {
@@ -105,17 +110,22 @@ function Participate() {
       consent: true,
     });
     if (error) { setState("idle"); setMsg(L.error); return; }
+    const savedAt = new Date().toISOString();
     sessionStorage.setItem(`aas_response_${responseId}`, JSON.stringify({
       id: responseId,
       art_is: ra.data || null,
       acted_through_art: rb.data || null,
-      created_at: new Date().toISOString(),
+      created_at: savedAt,
       language: lang,
       source_type: "live",
       is_mockup: false,
       exhibition_id: null,
     }));
-    await navigate({ to: "/glossary", search: { new: responseId } });
+    setSubmittedAt(savedAt);
+    setSubmittedId(responseId);
+    setState("idle");
+    setA("");
+    setB("");
   }
 
   return (
@@ -136,7 +146,10 @@ function Participate() {
       </header>
 
       <form onSubmit={submit} className="mt-10 md:mt-24">
-          <p className="mb-5 flex flex-wrap gap-x-3 gap-y-1 font-mono text-xs text-muted-foreground"><span>{L.clock}</span><time dateTime={clock ?? undefined}>{clock ? timestamp(clock, lang) : "—"}</time></p>
+          <div className="mb-5 grid gap-1 font-mono text-xs text-muted-foreground">
+            <p className="flex flex-wrap gap-x-3 gap-y-1"><span>{L.clock}</span><time dateTime={clock ?? undefined}>{clock ? timestamp(clock, lang) : "—"}</time></p>
+            <p className="flex flex-wrap gap-x-3 gap-y-1"><span>{L.localClock}</span><time dateTime={clock ?? undefined}>{localNow}</time></p>
+          </div>
           <div className="grid gap-px border-y border-foreground/15 bg-foreground/15 md:grid-cols-2">
             <label className="flex flex-col bg-background px-3 py-7 sm:p-6 md:min-h-72 md:p-10">
               <header className="flex items-center gap-4">
@@ -156,16 +169,34 @@ function Participate() {
             </label>
           </div>
 
-          <div className="mt-10 flex flex-col items-stretch md:items-start justify-between gap-8 md:flex-row md:items-center">
-            <p className="max-w-xl font-sans text-[15px] font-light leading-relaxed md:text-sm text-muted-foreground">
-              {L.consent}{" "}
-              <Link to="/privacy" className="underline underline-offset-2 hover:text-foreground">{L.privacy}</Link>
-            </p>
+          <div className="mt-10 flex flex-col items-stretch justify-between gap-8 md:flex-row md:items-center md:items-start">
+            <label className="max-w-xl text-[15px] font-light leading-relaxed text-muted-foreground md:text-sm">
+              <span className="flex items-start gap-3">
+                <input
+                  type="checkbox"
+                  checked={consent}
+                  onChange={(event) => setConsent(event.target.checked)}
+                  className="mt-1 h-4 w-4 rounded-none border border-foreground/40 bg-background"
+                />
+                <span>
+                  {L.consent}{" "}
+                  <Link to="/privacy" className="underline underline-offset-2 hover:text-foreground">{L.privacy}</Link>
+                </span>
+              </span>
+            </label>
             <Button type="submit" disabled={state === "sending" || (!a.trim() && !b.trim())} className="h-14 w-full rounded-none md:w-auto border border-foreground bg-primary px-8 font-mono text-xs uppercase text-primary-foreground transition-all hover:bg-background hover:text-foreground disabled:border-foreground/20 disabled:bg-transparent disabled:text-muted-foreground">
               {state === "sending" ? L.sending : `${L.submit} →`}
             </Button>
           </div>
           {msg && <p role="alert" className="mt-8 font-mono text-xs text-destructive">{msg}</p>}
+          {submittedAt && submittedId && (
+            <div className="mt-8 border border-foreground/20 px-4 py-4">
+              <p className="font-serif text-lg">{L.success}</p>
+              <p className="mt-3 font-mono text-xs text-muted-foreground">{L.recorded} <time dateTime={submittedAt}>{timestamp(submittedAt, lang)}</time></p>
+              <p className="mt-1 font-mono text-xs text-muted-foreground">{L.recordedLocal} <time dateTime={submittedAt}>{localSubmitted}</time></p>
+              <Link to="/glossary" search={{ new: submittedId }} className="mt-4 inline-block text-sm underline underline-offset-4">{L.glossaryTitle} →</Link>
+            </div>
+          )}
       </form>
       <footer className="mt-14 flex flex-wrap justify-between gap-2 border-t border-foreground/10 pt-5 font-mono text-[9px] uppercase text-muted-foreground"><span>Anonymous research protocol</span><span>Raw responses preserved</span></footer>
       </section>
