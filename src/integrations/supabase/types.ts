@@ -117,6 +117,108 @@ export type Database = {
           },
         ]
       }
+      response_pole_analysis: {
+        Row: {
+          created_at: string
+          created_by: string
+          id: string
+          pole_key: string
+          response_id: string
+          source_field: string
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string
+          id?: string
+          pole_key: string
+          response_id: string
+          source_field: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string
+          id?: string
+          pole_key?: string
+          response_id?: string
+          source_field?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "response_pole_analysis_response_id_fkey"
+            columns: ["response_id"]
+            isOneToOne: false
+            referencedRelation: "public_responses"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "response_pole_analysis_response_id_fkey"
+            columns: ["response_id"]
+            isOneToOne: false
+            referencedRelation: "responses"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      response_social_vectors: {
+        Row: {
+          advice_de: string[]
+          advice_en: string[]
+          created_at: string
+          created_by: string
+          id: string
+          pole_key: string
+          response_id: string
+          sector_de: string
+          sector_en: string
+          sector_key: string
+          statement_de: string
+          statement_en: string
+        }
+        Insert: {
+          advice_de?: string[]
+          advice_en?: string[]
+          created_at?: string
+          created_by?: string
+          id?: string
+          pole_key: string
+          response_id: string
+          sector_de: string
+          sector_en: string
+          sector_key: string
+          statement_de: string
+          statement_en: string
+        }
+        Update: {
+          advice_de?: string[]
+          advice_en?: string[]
+          created_at?: string
+          created_by?: string
+          id?: string
+          pole_key?: string
+          response_id?: string
+          sector_de?: string
+          sector_en?: string
+          sector_key?: string
+          statement_de?: string
+          statement_en?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "response_social_vectors_response_id_fkey"
+            columns: ["response_id"]
+            isOneToOne: true
+            referencedRelation: "public_responses"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "response_social_vectors_response_id_fkey"
+            columns: ["response_id"]
+            isOneToOne: true
+            referencedRelation: "responses"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       responses: {
         Row: {
           acted_through_art: string | null
@@ -213,6 +315,59 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "themes"
             referencedColumns: ["key"]
+          },
+        ]
+      }
+      public_response_poles: {
+        Row: {
+          pole_key: string | null
+          response_id: string | null
+          source_field: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "response_pole_analysis_response_id_fkey"
+            columns: ["response_id"]
+            isOneToOne: false
+            referencedRelation: "public_responses"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "response_pole_analysis_response_id_fkey"
+            columns: ["response_id"]
+            isOneToOne: false
+            referencedRelation: "responses"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      public_response_social_vectors: {
+        Row: {
+          advice_de: string[] | null
+          advice_en: string[] | null
+          created_at: string | null
+          pole_key: string | null
+          response_id: string | null
+          sector_de: string | null
+          sector_en: string | null
+          sector_key: string | null
+          statement_de: string | null
+          statement_en: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "response_social_vectors_response_id_fkey"
+            columns: ["response_id"]
+            isOneToOne: true
+            referencedRelation: "public_responses"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "response_social_vectors_response_id_fkey"
+            columns: ["response_id"]
+            isOneToOne: true
+            referencedRelation: "responses"
+            referencedColumns: ["id"]
           },
         ]
       }
