@@ -21,6 +21,26 @@ export const Route = createFileRoute("/glossary")({
 type ThemeLink = { response_id: string; theme_key: string };
 const PAGE_SIZE = 12;
 
+const MANIFEST_QUOTES = [
+  "Art is not an object.",
+  "Spaces are created through friction. And precisely therein lies their potency.",
+  "We do not stand outside this system. We are the material.",
+  "Art is not a closed-off field. Art is society.",
+  "What is lacking is not production. What is missing is participation in the conditions themselves.",
+  "Not as \u201Cart is\u201D \u2014 but as \u201Cart can be\u201D.",
+  "Art is an encounter. It is at once freedom and anxiety, expansion and limitation. Art is. It can. Nothing must.",
+];
+
+const MANIFEST_PRINCIPLES = [
+  "Concentration of experience over results (following Dewey)",
+  "Art as a constantly evolving act (following Bertram)",
+  "Multidimensional collaboration in urban practice",
+  "Transformation: from recipient to participant",
+  "Dynamics of action and reaction",
+  "Reflective capacity as structural change (Bertram)",
+  "Transgression of standardisation",
+];
+
 function Glossary() {
   const { new: newId } = Route.useSearch();
   const [lang, setLang] = useState<Lang>("en");
@@ -142,7 +162,16 @@ function Glossary() {
       </nav>
       {error && <div role="alert" className="mt-5 flex flex-wrap items-center gap-3"><p>{L.loadError}</p><Button variant="outline" onClick={load}>{L.retry}</Button></div>}
       {loading && <p role="status" className="mt-8 text-muted-foreground">{L.loading}</p>}
-      {view === "theory" ? <section className="max-w-3xl py-12"><p className="font-mono text-xs uppercase text-muted-foreground">{L.reference}</p><h2 className="mt-4 font-serif text-4xl">Futur One</h2><div className="mt-10 grid gap-7 border-t pt-7 md:grid-cols-3">{(["attitude", "gesture", "vectors"] as const).map((key, i) => <div key={key}><p className="font-mono text-xs text-muted-foreground">0{i + 1}</p><h3 className="mt-3 font-serif text-2xl">{L[key]}</h3></div>)}</div><p className="mt-8 text-sm leading-relaxed text-muted-foreground">{L.provisional}</p></section> : <>
+      {view === "theory" ? <section className="max-w-3xl py-12"><p className="font-mono text-xs uppercase text-muted-foreground">{L.reference}</p><h2 className="mt-4 font-serif text-4xl">Futur One</h2><div className="mt-10 grid gap-7 border-t pt-7 md:grid-cols-3">{(["attitude", "gesture", "vectors"] as const).map((key, i) => <div key={key}><p className="font-mono text-xs text-muted-foreground">0{i + 1}</p><h3 className="mt-3 font-serif text-2xl">{L[key]}</h3></div>)}</div><p className="mt-8 text-sm leading-relaxed text-muted-foreground">{L.provisional}</p>
+          <div className="mt-16 border-t pt-10">
+            <p className="font-mono text-xs uppercase text-muted-foreground">{L.manifestLabel}</p>
+            <h2 className="mt-3 font-serif text-2xl">{L.manifestTitle}</h2>
+            <blockquote className="mt-8 space-y-6 border-l border-border pl-5">{MANIFEST_QUOTES.map((quote) => <p key={quote} className="font-serif text-xl leading-relaxed">{quote}</p>)}</blockquote>
+            <p className="mt-10 font-mono text-xs uppercase text-muted-foreground">{L.manifestPrinciples}</p>
+            <ol className="mt-4 space-y-2">{MANIFEST_PRINCIPLES.map((principle, i) => <li key={principle} className="text-sm leading-relaxed text-muted-foreground"><span className="mr-3 font-mono text-xs">{String(i + 1).padStart(2, "0")}</span>{principle}</li>)}</ol>
+            <p className="mt-8 text-xs text-muted-foreground">{L.manifestSource}</p>
+          </div>
+        </section> : <>
         {view === "living" && <section className="mt-8" aria-label={L.connectionsTitle}>
           <div className="flex flex-wrap gap-2 border-b pb-6" role="group" aria-label={L.glossaryTitle}>{(["attitude", "gesture", "vectors"] as const).map((key, i) => <Button key={key} variant={field === key ? "default" : "outline"} onClick={() => { setField(key); choosePole(null); }} aria-pressed={field === key} className="h-auto min-h-11 max-w-full whitespace-normal text-left">0{i + 1} — {L[key]}</Button>)}</div>
           <div className="mt-7 grid gap-8 lg:grid-cols-[minmax(220px,1fr)_minmax(0,2fr)]">
