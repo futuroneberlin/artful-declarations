@@ -21,6 +21,26 @@ export const Route = createFileRoute("/glossary")({
 type ThemeLink = { response_id: string; theme_key: string };
 const PAGE_SIZE = 12;
 
+const MANIFEST_QUOTES = [
+  "Art is not an object.",
+  "Spaces are created through friction. And precisely therein lies their potency.",
+  "We do not stand outside this system. We are the material.",
+  "Art is not a closed-off field. Art is society.",
+  "What is lacking is not production. What is missing is participation in the conditions themselves.",
+  "Not as \u201Cart is\u201D \u2014 but as \u201Cart can be\u201D.",
+  "Art is an encounter. It is at once freedom and anxiety, expansion and limitation. Art is. It can. Nothing must.",
+];
+
+const MANIFEST_PRINCIPLES = [
+  "Concentration of experience over results (following Dewey)",
+  "Art as a constantly evolving act (following Bertram)",
+  "Multidimensional collaboration in urban practice",
+  "Transformation: from recipient to participant",
+  "Dynamics of action and reaction",
+  "Reflective capacity as structural change (Bertram)",
+  "Transgression of standardisation",
+];
+
 function Glossary() {
   const { new: newId } = Route.useSearch();
   const [lang, setLang] = useState<Lang>("en");

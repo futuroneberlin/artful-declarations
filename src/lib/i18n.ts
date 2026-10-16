@@ -58,6 +58,10 @@ export const t = {
     latest: "Latest contribution",
     allEchoes: "All echoes",
     unassigned: "Open / unassigned",
+    manifestLabel: "Manifest",
+    manifestTitle: "Memories for the Future — Handlungsraum",
+    manifestPrinciples: "Seven guiding principles of the scope of action",
+    manifestSource: "Excerpt quoted from the accompanying manifest (English original).",
   },
   de: {
     artIs: "Kunst ist",
@@ -116,5 +120,9 @@ export const t = {
     latest: "Neuester Beitrag",
     allEchoes: "Alle Echos",
     unassigned: "Offen / nicht zugeordnet",
+    manifestLabel: "Manifest",
+    manifestTitle: "Memories for the Future — Handlungsraum",
+    manifestPrinciples: "Sieben Leitsätze des Handlungsraums",
+    manifestSource: "Auszug aus dem begleitenden Manifest (englisches Original).",
   },
 } as const;
