@@ -4,7 +4,20 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { LivingField } from "@/components/LivingField";
 import { t, type Lang } from "@/lib/i18n";
+import { actionCard, cardText } from "@/lib/action-cards";
 import { extractRelations, POLES, poleLabel, timestamp, type Extraction, type Statement } from "@/lib/glossary-relations";
+
+function Card({ k, lang, own }: { k: string; lang: Lang; own?: boolean }) {
+  const c = actionCard(k); const de = lang === "de";
+  return <article className={`border p-5 ${own ? "border-foreground" : "border-border"}`}>
+    <p className="font-mono text-xs uppercase text-muted-foreground">03 — {poleLabel(k, lang)}</p>
+    <p className="mt-3 font-serif text-lg leading-relaxed">{cardText(c.field, lang)}</p>
+    <p className="mt-5 font-mono text-xs uppercase text-muted-foreground">{de ? "Nächster Schritt" : "Next step"}</p>
+    <p className="mt-1 text-sm leading-relaxed">{cardText(c.step, lang)}</p>
+    <p className="mt-4 font-mono text-xs uppercase text-muted-foreground">{de ? "In deine künstlerische Praxis" : "Into your artistic practice"}</p>
+    <p className="mt-1 text-sm leading-relaxed">{cardText(c.practice, lang)}</p>
+  </article>;
+}
 
 export const Route = createFileRoute("/glossary")({
   validateSearch: (search: Record<string, unknown>): { new?: string } => typeof search["new"] === "string" ? { new: search["new"].slice(0, 50) } : {},
@@ -133,6 +146,8 @@ function Glossary() {
     if (focus && !list.some((row) => row.id === focus.id)) list.push(focus);
     return list.map((row) => ({ id: row.id, art: field === "gesture" ? null : row.art_is, act: field === "attitude" ? null : row.acted_through_art, createdAt: row.created_at, themes: relations.get(row.id)?.poles ?? ["open"] }));
   }, [filtered, all, selectedId, ownId, field, relations]);
+  const ownRow = newId ? all.find((row) => row.id === newId) : undefined;
+  const ownCards = ownRow ? extractRelations(ownRow, "vectors", themeMap.get(ownRow.id)).poles : [];
   const labels = Object.fromEntries(poles.map((item) => [item.key, poleLabel(item.key, lang)]));
   const choosePole = (key: string | null) => { setPole(key); setEcho(null); setSelectedId(null); };
 
@@ -157,6 +172,7 @@ function Glossary() {
         <div className="flex flex-wrap items-center gap-4"><Link to="/" className="text-sm underline underline-offset-4">{L.submit} →</Link>{(["de", "en"] as const).map((code) => <Button key={code} variant="ghost" size="sm" aria-pressed={lang === code} onClick={() => { setLang(code); localStorage.setItem("aas_lang", code); }} className={lang === code ? "underline underline-offset-4" : "text-muted-foreground"}>{code.toUpperCase()}</Button>)}</div>
       </header>
       {arrival && <p aria-live="polite" className="mt-5 text-lg">{L.success}</p>}
+      {ownCards.length > 0 && <section className="mt-6" aria-label={lang === "de" ? "Deine Karten sozialen Handelns" : "Your social action cards"}><p className="font-mono text-xs uppercase text-muted-foreground">{lang === "de" ? "Deine Karten sozialen Handelns" : "Your social action cards"}</p><div className="mt-3 grid gap-4 md:grid-cols-2 lg:grid-cols-3">{ownCards.map((k) => <Card key={k} k={k} lang={lang} own />)}</div></section>}
       <nav className="mt-8 flex flex-wrap gap-x-6 gap-y-2 border-y py-3" aria-label={L.glossaryTitle}>
         {(["living", "participation", "theory"] as const).map((key) => <Button key={key} variant="ghost" onClick={() => setView(key)} aria-pressed={view === key} className={`h-auto whitespace-normal px-0 py-2 text-left text-base hover:bg-transparent ${view === key ? "text-foreground underline underline-offset-8" : "text-muted-foreground"}`}>{key === "living" ? L.connectionsTitle : key === "participation" ? L.participationTitle : L.theoryTitle}</Button>)}
       </nav>
@@ -185,6 +201,7 @@ function Glossary() {
           </div>
           <div className="mt-9 border-y py-5"><h2 className="font-serif text-2xl">{L.echoes}</h2><div className="mt-4 flex flex-wrap gap-2"><Button variant={!echo ? "default" : "outline"} aria-pressed={!echo} onClick={() => setEcho(null)}>{L.allEchoes}</Button>{echoes.map((item) => <Button key={item.key} variant={echo === item.key ? "default" : "outline"} aria-pressed={echo === item.key} onClick={() => setEcho(echo === item.key ? null : item.key)} className="h-auto min-h-10 max-w-full whitespace-normal text-left">{item[lang]} <span className="font-mono text-xs">{item.count}</span></Button>)}</div></div>
           <p className="mt-4 max-w-3xl text-sm leading-relaxed text-muted-foreground">{L.provisional}</p>
+          {field === "vectors" && <div className="mt-9"><h2 className="font-serif text-2xl">{lang === "de" ? "Karten sozialen Handelns" : "Social action cards"}</h2><div className="mt-4 grid gap-4 md:grid-cols-2 lg:grid-cols-3">{(pole ? [pole] : [...POLES.map((p) => p.key), "open"]).map((k) => <Card key={k} k={k} lang={lang} own={ownCards.includes(k)} />)}</div></div>}
         </section>}
         <section className="mt-10" aria-label={L.participationTitle}>
           <div className="flex flex-wrap items-center justify-between gap-5"><h2 className="font-serif text-2xl">{L.participationTitle} <span className="font-mono text-sm text-muted-foreground">{filtered.length}</span></h2><input type="search" aria-label={L.search} placeholder={L.search} value={query} onChange={(e) => setQuery(e.target.value)} className="h-11 w-full border bg-background px-3 text-base outline-none focus:ring-1 focus:ring-ring sm:w-72" /></div>
