@@ -42,5 +42,5 @@ export const ACTION_CARDS: Record<string, ActionCard> = {
   },
 };
 
-export const actionCard = (key: string) => ACTION_CARDS[key] ?? ACTION_CARDS.open;
+export const actionCard = (key: string) => ACTION_CARDS[key] ?? ACTION_CARDS["open"]!;
 export const cardText = (text: Text, lang: Lang) => text[lang];
