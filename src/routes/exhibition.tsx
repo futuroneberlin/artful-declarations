@@ -58,13 +58,13 @@ function Exhibition() {
   const latest = rows.slice(0, 6);
 
   return (
-    <main className="dark flex min-h-screen flex-col bg-background text-foreground lg:h-screen lg:flex-row">
+    <main className="flex min-h-screen flex-col bg-background text-foreground lg:h-screen lg:flex-row">
       <section className="relative min-h-[60vh] flex-1">
         <header className="absolute left-0 right-0 top-0 z-10 flex justify-between p-4 font-mono text-[10px] uppercase tracking-[0.18em] text-muted-foreground md:p-6">
           <span className="flex items-center gap-3"><span className="field-pulse h-1.5 w-1.5 rounded-full bg-foreground" />{L.exhibitionTitle}</span>
           <span>{rows.length} {L.statementsLabel}</span>
         </header>
-        <LivingField nodes={nodes} themeLabels={labels} openLabel={L.unassigned} promptLabels={{ art: L.artIs, act: L.actedShort }} className="absolute inset-0" />
+        <div className="absolute inset-0"><LivingField nodes={nodes} themeLabels={labels} openLabel={L.unassigned} promptLabels={{ art: L.artIs, act: L.actedShort }} /></div>
         {error && <p className="absolute bottom-4 left-4 font-mono text-xs text-destructive">{L.loadError}</p>}
       </section>
       <aside className="w-full border-t border-border p-5 md:p-8 lg:w-96 lg:overflow-hidden lg:border-l lg:border-t-0">
