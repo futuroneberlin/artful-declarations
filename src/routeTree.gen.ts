@@ -10,12 +10,18 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as ExhibitionRouteImport } from './routes/exhibition'
 import { Route as GlossaryRouteImport } from './routes/glossary'
 import { Route as PrivacyRouteImport } from './routes/privacy'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ExhibitionRoute = ExhibitionRouteImport.update({
+  id: '/exhibition',
+  path: '/exhibition',
   getParentRoute: () => rootRouteImport,
 } as any)
 const GlossaryRoute = GlossaryRouteImport.update({
@@ -31,30 +37,34 @@ const PrivacyRoute = PrivacyRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/exhibition': typeof ExhibitionRoute
   '/glossary': typeof GlossaryRoute
   '/privacy': typeof PrivacyRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/exhibition': typeof ExhibitionRoute
   '/glossary': typeof GlossaryRoute
   '/privacy': typeof PrivacyRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/exhibition': typeof ExhibitionRoute
   '/glossary': typeof GlossaryRoute
   '/privacy': typeof PrivacyRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/glossary' | '/privacy'
+  fullPaths: '/' | '/exhibition' | '/glossary' | '/privacy'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/glossary' | '/privacy'
-  id: '__root__' | '/' | '/glossary' | '/privacy'
+  to: '/' | '/exhibition' | '/glossary' | '/privacy'
+  id: '__root__' | '/' | '/exhibition' | '/glossary' | '/privacy'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  ExhibitionRoute: typeof ExhibitionRoute
   GlossaryRoute: typeof GlossaryRoute
   PrivacyRoute: typeof PrivacyRoute
 }
@@ -66,6 +76,13 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/exhibition': {
+      id: '/exhibition'
+      path: '/exhibition'
+      fullPath: '/exhibition'
+      preLoaderRoute: typeof ExhibitionRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/glossary': {
@@ -87,6 +104,7 @@ declare module '@tanstack/react-router' {
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  ExhibitionRoute: ExhibitionRoute,
   GlossaryRoute: GlossaryRoute,
   PrivacyRoute: PrivacyRoute,
 }

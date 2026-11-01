@@ -16,5 +16,5 @@
 - Interface strings live in `src/lib/i18n.ts` (de/en). Why: every response stores its language; UI must be fully bilingual.
 - Theme assignment runs in a DB trigger on `responses` insert writing to `response_analysis`; public reads via `public_response_themes`. Why: categorise instantly without touching raw rows.
 - Live glossary updates use a Realtime broadcast ping plus 10s polling, not postgres_changes. Why: raw `responses` are not publicly readable, so row-change events can't reach visitors.
-- `LivingField` (src/components) is the shared canvas field for /glossary and /exhibition. Why: one visual system.
-- Glossary relations use a transparent bilingual keyword codebook with three extraction lenses, bounded canvas samples and paginated public-view reads. Why: retain research provenance and readable navigation at 1,500+ responses without claiming validated semantic inference.
+- `LivingField` (src/components) is the shared canvas field for /exhibition (/glossary redirects there). Why: one visual system.
+- Glossary relations use a transparent bilingual keyword codebook (macro poles only on the site), bounded canvas samples and paginated public-view reads. Why: retain research provenance and readable navigation at 1,500+ responses without claiming validated semantic inference.
