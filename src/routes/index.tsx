@@ -1,4 +1,4 @@
-import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useRef, useState } from "react";
 import { z } from "zod";
 import { Button } from "@/components/ui/button";
@@ -58,7 +58,8 @@ function Blank({ value, onChange, label }: { value: string; onChange: (v: string
 
 function Participate() {
   const { loc } = Route.useSearch();
-  const navigate = useNavigate();
+  const [consent, setConsent] = useState(false);
+  const [done, setDone] = useState<string | null>(null);
   const [lang, setLang] = useState<Lang>("en");
   const [a, setA] = useState("");
   const [b, setB] = useState("");
@@ -87,7 +88,8 @@ function Participate() {
     setMsg(null);
     const ra = answer.safeParse(a), rb = answer.safeParse(b);
     if (!ra.success || !rb.success) return setMsg(L.error);
-    if (!ra.data && !rb.data) return setMsg(L.needOne);
+    if (!ra.data) return setMsg(L.needOne);
+    if (!consent) return setMsg(L.consentBox);
     setState("sending");
     let location_id: string | null = null;
     if (loc) {
@@ -104,18 +106,9 @@ function Participate() {
       language: lang,
       consent: true,
     });
-    if (error) { setState("idle"); setMsg(L.error); return; }
-    sessionStorage.setItem(`aas_response_${responseId}`, JSON.stringify({
-      id: responseId,
-      art_is: ra.data || null,
-      acted_through_art: rb.data || null,
-      created_at: new Date().toISOString(),
-      language: lang,
-      source_type: "live",
-      is_mockup: false,
-      exhibition_id: null,
-    }));
-    await navigate({ to: "/glossary", search: { new: responseId } });
+    // Testing phase: show the real database error so saving problems are visible.
+    if (error) { setState("idle"); setMsg(`${L.error} [${error.code ?? ""} ${error.message}]`); return; }
+    setState("idle"); setA(""); setB(""); setDone(new Date().toISOString());
   }
 
   return (
@@ -135,6 +128,16 @@ function Participate() {
         </span>
       </header>
 
+      {done ? (
+        <div className="field-arrive mt-16 md:mt-28" role="status">
+          <p className="font-serif text-3xl font-bold leading-tight tracking-tight md:text-5xl">{L.success}</p>
+          <p className="mt-6 flex flex-wrap gap-x-3 font-mono text-xs text-muted-foreground"><span>{L.recorded}</span><time dateTime={done}>{timestamp(done, lang)}</time></p>
+          <div className="mt-12 flex flex-wrap gap-8 font-mono text-xs uppercase">
+            <Link to="/exhibition" className="underline underline-offset-4 hover:text-muted-foreground">{L.toExhibition} →</Link>
+            <button type="button" onClick={() => setDone(null)} className="text-muted-foreground hover:text-foreground">{L.another}</button>
+          </div>
+        </div>
+      ) : (
       <form onSubmit={submit} className="mt-10 md:mt-24">
           <p className="mb-5 flex flex-wrap gap-x-3 gap-y-1 font-mono text-xs text-muted-foreground"><span>{L.clock}</span><time dateTime={clock ?? undefined}>{clock ? timestamp(clock, lang) : "—"}</time></p>
           <div className="grid gap-px border-y border-foreground/15 bg-foreground/15 md:grid-cols-2">
@@ -151,22 +154,24 @@ function Participate() {
                 <span className="shrink-0 font-mono text-[10px] uppercase tracking-[0.18em] text-muted-foreground">02</span>
                 <div className="h-px flex-grow bg-foreground/10" />
               </header>
-              <h2 className="mt-6 font-serif text-[2.5rem] font-bold leading-[1.02] tracking-tighter md:text-5xl">{L.acted}</h2>
+              <h2 className="mt-6 font-serif text-[2.5rem] font-bold leading-[1.02] tracking-tighter md:text-5xl">{L.acted} <span className="align-middle font-mono text-[10px] font-normal uppercase tracking-[0.18em] text-muted-foreground">({L.optional})</span></h2>
               <Blank value={b} onChange={setB} label={L.acted} />
             </label>
           </div>
 
           <div className="mt-10 flex flex-col items-stretch md:items-start justify-between gap-8 md:flex-row md:items-center">
-            <p className="max-w-xl font-sans text-[15px] font-light leading-relaxed md:text-sm text-muted-foreground">
-              {L.consent}{" "}
-              <Link to="/privacy" className="underline underline-offset-2 hover:text-foreground">{L.privacy}</Link>
+            <p className="flex max-w-xl items-start gap-3 font-sans text-[15px] font-light leading-relaxed md:text-sm text-muted-foreground">
+              <input type="checkbox" checked={consent} onChange={(e) => setConsent(e.target.checked)} aria-label={L.consentBox} className="mt-1 h-4 w-4 shrink-0 accent-foreground" />
+              <span>{L.consentBox}{" "}
+              <Link to="/privacy" className="underline underline-offset-2 hover:text-foreground">{L.privacy}</Link></span>
             </p>
-            <Button type="submit" disabled={state === "sending" || (!a.trim() && !b.trim())} className="h-14 w-full rounded-none md:w-auto border border-foreground bg-primary px-8 font-mono text-xs uppercase text-primary-foreground transition-all hover:bg-background hover:text-foreground disabled:border-foreground/20 disabled:bg-transparent disabled:text-muted-foreground">
+            <Button type="submit" disabled={state === "sending" || !a.trim() || !consent} className="h-14 w-full rounded-none md:w-auto border border-foreground bg-primary px-8 font-mono text-xs uppercase text-primary-foreground transition-all hover:bg-background hover:text-foreground disabled:border-foreground/20 disabled:bg-transparent disabled:text-muted-foreground">
               {state === "sending" ? L.sending : `${L.submit} →`}
             </Button>
           </div>
           {msg && <p role="alert" className="mt-8 font-mono text-xs text-destructive">{msg}</p>}
       </form>
+      )}
       <footer className="mt-14 flex flex-wrap justify-between gap-2 border-t border-foreground/10 pt-5 font-mono text-[9px] uppercase text-muted-foreground"><span>Anonymous research protocol</span><span>Raw responses preserved</span></footer>
       </section>
     </main>
