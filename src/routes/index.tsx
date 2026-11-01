@@ -13,9 +13,9 @@ export const Route = createFileRoute("/")({
   },
   head: () => ({
     meta: [
-      { title: "Art as Stance — Complete the sentence" },
+      { title: "Artful Declarations — Art is ______" },
       { name: "description", content: "An anonymous, collective social sculpture. Complete: Art is ______." },
-      { property: "og:title", content: "Art as Stance" },
+      { property: "og:title", content: "Artful Declarations · Zwolle Biennale" },
       { property: "og:description", content: "Complete the sentence. Enter the collective field." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
@@ -129,7 +129,7 @@ function Participate() {
       </header>
 
       {done ? (
-        <div className="field-arrive mt-16 md:mt-28" role="status">
+        <div className="fade-up mt-16 md:mt-28" role="status">
           <p className="font-serif text-3xl font-bold leading-tight tracking-tight md:text-5xl">{L.success}</p>
           <p className="mt-6 flex flex-wrap gap-x-3 font-mono text-xs text-muted-foreground"><span>{L.recorded}</span><time dateTime={done}>{timestamp(done, lang)}</time></p>
           <div className="mt-12 flex flex-wrap gap-8 font-mono text-xs uppercase">

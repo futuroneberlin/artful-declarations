@@ -78,7 +78,7 @@ function Exhibition() {
         <ul className="mt-4 space-y-5">
           {latest.length === 0 && <li className="text-muted-foreground">{L.fieldWaiting}</li>}
           {latest.map((r) => (
-            <li key={r.id} className="field-arrive">
+            <li key={r.id} className="fade-up">
               <time dateTime={r.created_at} className="font-mono text-[10px] text-muted-foreground">{timestamp(r.created_at, lang)}</time>
               {r.art_is && <p className="mt-1 font-serif text-base leading-snug">{L.artIs} {r.art_is}</p>}
               {r.acted_through_art && <p className="mt-1 text-sm leading-snug text-muted-foreground">{L.acted} {r.acted_through_art}</p>}
