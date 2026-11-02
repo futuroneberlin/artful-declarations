@@ -1,6 +1,7 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useRef, useState } from "react";
-import { z } from "zod";
+import { prepareContribution } from "@/lib/contribution";
+import { LoadingBar } from "@/components/LoadingBar";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { t, type Lang } from "@/lib/i18n";
@@ -23,8 +24,6 @@ export const Route = createFileRoute("/")({
   }),
   component: Participate,
 });
-
-const answer = z.string().trim().max(500);
 
 function getSessionId() {
   const k = "aas_session";
@@ -58,8 +57,7 @@ function Blank({ value, onChange, label }: { value: string; onChange: (v: string
 
 function Participate() {
   const { loc } = Route.useSearch();
-  const [consent, setConsent] = useState(false);
-  const [done, setDone] = useState<string | null>(null);
+  const navigate = useNavigate();
   const [lang, setLang] = useState<Lang>("en");
   const [a, setA] = useState("");
   const [b, setB] = useState("");
@@ -86,10 +84,8 @@ function Participate() {
   async function submit(e: React.FormEvent) {
     e.preventDefault();
     setMsg(null);
-    const ra = answer.safeParse(a), rb = answer.safeParse(b);
-    if (!ra.success || !rb.success) return setMsg(L.error);
-    if (!ra.data) return setMsg(L.needOne);
-    if (!consent) return setMsg(L.consentBox);
+    const contribution = prepareContribution(a, b, lang);
+    if (!contribution) return setMsg(a.trim() ? L.error : L.needOne);
     setState("sending");
     let location_id: string | null = null;
     if (loc) {
@@ -99,20 +95,18 @@ function Participate() {
     const responseId = crypto.randomUUID();
     const { error } = await supabase.from("responses").insert({
       id: responseId,
-      art_is: ra.data || null,
-      acted_through_art: rb.data || null,
+      ...contribution,
       session_id: getSessionId(),
       location_id,
-      language: lang,
-      consent: true,
     });
     // Testing phase: show the real database error so saving problems are visible.
     if (error) { setState("idle"); setMsg(`${L.error} [${error.code ?? ""} ${error.message}]`); return; }
-    setState("idle"); setA(""); setB(""); setDone(new Date().toISOString());
+    await navigate({ to: "/exhibition" });
   }
 
   return (
     <main className="relative min-h-screen overflow-hidden bg-background px-3 py-3 text-foreground md:flex md:items-center md:px-12 md:py-10">
+      {state === "sending" && <LoadingBar label={L.loading} />}
       <div className="research-grid pointer-events-none absolute inset-0 opacity-50" />
       <section className="relative mx-auto w-full max-w-6xl border border-foreground/20 bg-background/90 backdrop-blur-sm px-4 py-6 sm:p-6 md:p-12">
       <span className="absolute -left-px -top-px h-8 w-8 border-l border-t border-foreground" />
@@ -128,16 +122,6 @@ function Participate() {
         </span>
       </header>
 
-      {done ? (
-        <div className="fade-up mt-16 md:mt-28" role="status">
-          <p className="font-serif text-3xl font-bold leading-tight tracking-tight md:text-5xl">{L.success}</p>
-          <p className="mt-6 flex flex-wrap gap-x-3 font-mono text-xs text-muted-foreground"><span>{L.recorded}</span><time dateTime={done}>{timestamp(done, lang)}</time></p>
-          <div className="mt-12 flex flex-wrap gap-8 font-mono text-xs uppercase">
-            <Link to="/exhibition" className="underline underline-offset-4 hover:text-muted-foreground">{L.toExhibition} →</Link>
-            <button type="button" onClick={() => setDone(null)} className="text-muted-foreground hover:text-foreground">{L.another}</button>
-          </div>
-        </div>
-      ) : (
       <form onSubmit={submit} className="mt-10 md:mt-24">
           <p className="mb-5 flex flex-wrap gap-x-3 gap-y-1 font-mono text-xs text-muted-foreground"><span>{L.clock}</span><time dateTime={clock ?? undefined}>{clock ? timestamp(clock, lang) : "—"}</time></p>
           <div className="grid gap-px border-y border-foreground/15 bg-foreground/15 md:grid-cols-2">
@@ -161,17 +145,15 @@ function Participate() {
 
           <div className="mt-10 flex flex-col items-stretch md:items-start justify-between gap-8 md:flex-row md:items-center">
             <p className="flex max-w-xl items-start gap-3 font-sans text-[15px] font-light leading-relaxed md:text-sm text-muted-foreground">
-              <input type="checkbox" checked={consent} onChange={(e) => setConsent(e.target.checked)} aria-label={L.consentBox} className="mt-1 h-4 w-4 shrink-0 accent-foreground" />
-              <span>{L.consentBox}{" "}
+               <span>{L.consent}{" "}
               <Link to="/privacy" className="underline underline-offset-2 hover:text-foreground">{L.privacy}</Link></span>
             </p>
-            <Button type="submit" disabled={state === "sending" || !a.trim() || !consent} className="h-14 w-full rounded-none md:w-auto border border-foreground bg-primary px-8 font-mono text-xs uppercase text-primary-foreground transition-all hover:bg-background hover:text-foreground disabled:border-foreground/20 disabled:bg-transparent disabled:text-muted-foreground">
+            <Button type="submit" disabled={state === "sending" || !a.trim()} className="h-14 w-full rounded-none md:w-auto border border-foreground bg-primary px-8 font-mono text-xs uppercase text-primary-foreground transition-all hover:bg-background hover:text-foreground disabled:border-foreground/20 disabled:bg-transparent disabled:text-muted-foreground">
               {state === "sending" ? L.sending : `${L.submit} →`}
             </Button>
           </div>
           {msg && <p role="alert" className="mt-8 font-mono text-xs text-destructive">{msg}</p>}
       </form>
-      )}
       <footer className="mt-14 flex flex-wrap justify-between gap-2 border-t border-foreground/10 pt-5 font-mono text-[9px] uppercase text-muted-foreground"><span>Anonymous research protocol</span><span>Raw responses preserved</span></footer>
       </section>
     </main>

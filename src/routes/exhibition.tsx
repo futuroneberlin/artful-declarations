@@ -2,6 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { LivingField, type FieldNode } from "@/components/LivingField";
+import { LoadingBar } from "@/components/LoadingBar";
 import { t, type Lang } from "@/lib/i18n";
 import { extractRelations, POLES, poleLabel, timestamp, type Statement } from "@/lib/glossary-relations";
 
@@ -20,6 +21,7 @@ function Exhibition() {
   const [lang, setLang] = useState<Lang>("en");
   const [rows, setRows] = useState<Statement[]>([]);
   const [error, setError] = useState(false);
+  const [loading, setLoading] = useState(true);
   const L = t[lang];
 
   useEffect(() => {
@@ -31,11 +33,11 @@ function Exhibition() {
     const all: Statement[] = [];
     for (let o = 0; ; o += 500) {
       const { data, error } = await supabase.from("public_responses").select("id, art_is, acted_through_art, created_at, language").order("created_at", { ascending: false }).range(o, o + 499);
-      if (error) { setError(true); return; }
+      if (error) { setError(true); setLoading(false); return; }
       all.push(...(data ?? []).filter((r): r is Statement => Boolean(r.id && r.created_at)));
       if ((data?.length ?? 0) < 500) break;
     }
-    setRows(all); setError(false);
+    setRows(all); setError(false); setLoading(false);
   }, []);
 
   useEffect(() => {
@@ -59,6 +61,7 @@ function Exhibition() {
 
   return (
     <main className="flex min-h-screen flex-col bg-background text-foreground lg:h-screen lg:flex-row">
+      {loading && <LoadingBar label={L.loading} />}
       <section className="relative min-h-[60vh] flex-1">
         <header className="absolute left-0 right-0 top-0 z-10 flex justify-between p-4 font-mono text-[10px] uppercase tracking-[0.18em] text-muted-foreground md:p-6">
           <span className="flex items-center gap-3"><span className="field-pulse h-1.5 w-1.5 rounded-full bg-foreground" />{L.exhibitionTitle}</span>
