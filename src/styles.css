@@ -69,6 +69,7 @@
   --background: oklch(0 0 0);
   --field-art: oklch(1 0 0);
   --field-act: oklch(0.56 0 0);
+  --field-own: oklch(0.7 0.2 45);
   --foreground: oklch(1 0 0);
   --card: oklch(0 0 0);
   --card-foreground: oklch(1 0 0);

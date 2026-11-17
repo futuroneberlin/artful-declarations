@@ -23,6 +23,8 @@ function Exhibition() {
   const [error, setError] = useState(false);
   const [loading, setLoading] = useState(true);
   const L = t[lang];
+  const [ownId, setOwnId] = useState<string | null>(null);
+  useEffect(() => { setOwnId(localStorage.getItem("aas_own")); }, []);
 
   useEffect(() => {
     const s = localStorage.getItem("aas_lang");
@@ -47,10 +49,10 @@ function Exhibition() {
     return () => { window.clearInterval(poll); supabase.removeChannel(ch); };
   }, [load]);
 
-  const nodes: FieldNode[] = useMemo(() => rows.slice(0, 400).map((r) => {
+  const nodes: FieldNode[] = useMemo(() => [...rows.slice(0, 400), ...rows.slice(400).filter((r) => r.id === ownId)].map((r) => {
     const poles = extractRelations(r, "vectors").poles.filter((p) => p !== "open");
     return { id: r.id, art: r.art_is, act: r.acted_through_art, createdAt: r.created_at, themes: poles };
-  }), [rows]);
+  }), [rows, ownId]);
   const labels = useMemo(() => Object.fromEntries(POLES.map((p) => [p.key, p[lang]])), [lang]);
   const counts = useMemo(() => {
     const c: Record<string, number> = {};
@@ -67,7 +69,7 @@ function Exhibition() {
           <span className="flex items-center gap-3"><span className="field-pulse h-1.5 w-1.5 rounded-full bg-foreground" />{L.exhibitionTitle}</span>
           <span>{rows.length} {L.statementsLabel}</span>
         </header>
-        <div className="absolute inset-0"><LivingField nodes={nodes} themeLabels={labels} openLabel={L.unassigned} promptLabels={{ art: L.artIs, act: L.actedShort }} /></div>
+        <div className="absolute inset-0"><LivingField nodes={nodes} themeLabels={labels} openLabel={L.unassigned} promptLabels={{ art: L.artIs, act: L.actedShort }} ownId={ownId} /></div>
         {error && <p className="absolute bottom-4 left-4 font-mono text-xs text-destructive">{L.loadError}</p>}
       </section>
       <aside className="w-full border-t border-border p-5 md:p-8 lg:w-96 lg:overflow-hidden lg:border-l lg:border-t-0">
@@ -81,7 +83,7 @@ function Exhibition() {
         <ul className="mt-4 space-y-5">
           {latest.length === 0 && <li className="text-muted-foreground">{L.fieldWaiting}</li>}
           {latest.map((r) => (
-            <li key={r.id} className="fade-up">
+            <li key={r.id} className={`fade-up ${r.id === ownId ? "border-l-2 border-[var(--field-own)] pl-3" : ""}`}>
               <time dateTime={r.created_at} className="font-mono text-[10px] text-muted-foreground">{timestamp(r.created_at, lang)}</time>
               {r.art_is && <p className="mt-1 font-serif text-base leading-snug">{L.artIs} {r.art_is}</p>}
               {r.acted_through_art && <p className="mt-1 text-sm leading-snug text-muted-foreground">{L.acted} {r.acted_through_art}</p>}

@@ -101,6 +101,7 @@ function Participate() {
     });
     // Testing phase: show the real database error so saving problems are visible.
     if (error) { setState("idle"); setMsg(`${L.error} [${error.code ?? ""} ${error.message}]`); return; }
+    localStorage.setItem("aas_own", responseId);
     await navigate({ to: "/exhibition" });
   }
 

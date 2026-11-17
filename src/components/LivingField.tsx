@@ -102,6 +102,7 @@ export function LivingField({ promptLabels, nodes, themeLabels, openLabel, ownId
       act: col("--field-act", "#3b5b6b"),
       fg: col("--foreground", "#222"),
       muted: col("--muted-foreground", "#777"),
+      own: col("--field-own", "#ff6a00"),
     };
 
     const resize = () => {
@@ -229,11 +230,14 @@ export function LivingField({ promptLabels, nodes, themeLabels, openLabel, ownId
 
         if (glow > 0 || isOwn || isSel) {
           ctx.globalAlpha = Math.max(glow * 0.35, isOwn || isSel ? 0.22 : 0);
-          ctx.fillStyle = s.kind === "act" ? C.act : C.art;
+          ctx.fillStyle = isOwn ? C.own : s.kind === "act" ? C.act : C.art;
           ctx.beginPath(); ctx.arc(s.x, s.y, r * 2.6, 0, Math.PI * 2); ctx.fill();
         }
         ctx.globalAlpha = isOwn || isSel ? 0.95 : baseAlpha;
-        if (s.kind === "both") {
+        if (isOwn) {
+          ctx.fillStyle = C.own;
+          ctx.beginPath(); ctx.arc(s.x, s.y, r, 0, Math.PI * 2); ctx.fill();
+        } else if (s.kind === "both") {
           ctx.fillStyle = C.art;
           ctx.beginPath(); ctx.arc(s.x, s.y, r, Math.PI / 2, Math.PI * 1.5); ctx.fill();
           ctx.fillStyle = C.act;
@@ -243,7 +247,7 @@ export function LivingField({ promptLabels, nodes, themeLabels, openLabel, ownId
           ctx.beginPath(); ctx.arc(s.x, s.y, r, 0, Math.PI * 2); ctx.fill();
         }
         if (isOwn || isSel) {
-          ctx.globalAlpha = 0.8; ctx.strokeStyle = C.fg; ctx.lineWidth = 1;
+          ctx.globalAlpha = 0.8; ctx.strokeStyle = isOwn ? C.own : C.fg; ctx.lineWidth = 1;
           ctx.beginPath(); ctx.arc(s.x, s.y, r + 4, 0, Math.PI * 2); ctx.stroke();
         }
         if (showText && s.text) {
